@@ -48,7 +48,7 @@ public class ValueUtilsTest {
     Assert.assertNull(ValueUtils.parseCsvString(""));
     Assert.assertNull(ValueUtils.parseCsvString("    "));
     Assert.assertNull(ValueUtils.parseCsvString("  ,, ,   ,   "));
-    List<String> r = ValueUtils.parseCsvString(" ORG ,UUUU, , PEM  , ,SU07  ");
+    List<String> r = ValueUtils.parseCsvString(" ORG ,,UUUU, , PEM  , ,SU07  ");
     Assert.assertEquals(4, r.size());
     Assert.assertEquals("ORG", r.get(0));
     Assert.assertEquals("UUUU", r.get(1));

@@ -17,7 +17,6 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.common.xcontent.support.XContentMapValues;
 
 /**
  * Utility functions for structured content manipulation. Structured content is commonly represented as Map of Maps
@@ -28,14 +27,21 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
 public class StructureUtils {
 
   /**
-   * Get node value as {@link Integer} object instance if possible.
+   * Typesafe get value from map as {@link Integer} object instance if possible.
    * 
-   * @param node to get value from
+   * @param values to get value from. Can be null.
+   * @param key to get value from Map. Must be defined
    * @return Integer value or null.
    * @throws NumberFormatException if value can't be converted to the int value
-   * @see XContentMapValues#nodeIntegerValue(Object, int)
+   * 
    */
-  public static Integer nodeIntegerValue(Object node) throws NumberFormatException {
+  public static Integer getIntegerValue(Map<String, Object> values, String key) throws NumberFormatException {
+    if (ValueUtils.isEmpty(key))
+      throw new IllegalArgumentException("key must be defined");
+    if (values == null)
+      return null;
+
+    Object node = values.get(key);
     if (node == null) {
       return null;
     }
@@ -46,6 +52,26 @@ public class StructureUtils {
     }
 
     return Integer.parseInt(node.toString());
+  }
+
+  /**
+   * Typesafe get value from map as {@link String}. An {@link Object#toString()} is used for nonstring objects.
+   * 
+   * @param values to get value from. Can be null.
+   * @param key to get value from Map. Must be defined
+   * @return value for given key as String.
+   */
+  public static String getStringValue(Map<String, Object> values, String key) {
+    if (ValueUtils.isEmpty(key))
+      throw new IllegalArgumentException("key must be defined");
+    if (values == null)
+      return null;
+    Object node = values.get(key);
+    if (node == null) {
+      return null;
+    } else {
+      return node.toString();
+    }
   }
 
   /**

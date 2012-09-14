@@ -11,37 +11,8 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
 
 /**
- * Interface for components used to preprocess issue data loaded from JIRA before indexed document is created from them.
- * <p>
- * Preprocessors may be configured in <code>index</code> section of river configuration:
- * 
- * <pre>
- *     ...
- *     "index" : {
- *         ...
- *         "preprocessors" : [
- *             { 
- *                 "name"     : "Status Normalizer",
- *                 "class"    : "org.jboss.elasticsearch.river.jira.preproc.StatusNormalizer",
- *                 "settings" : {
- *                     "some_setting_1" : "value1",
- *                     "some_setting_2" : "value2"
- *                 } 
- *             },
- *             { 
- *                 "name"     : "Issue type Normalizer",
- *                 "class"    : "org.jboss.elasticsearch.river.jira.preproc.IssueTypeNormalizer",
- *                 "settings" : {
- *                     "some_setting_1" : "value1",
- *                     "some_setting_2" : "value2"
- *                 } 
- *             }
- *         ]
- *      }
- * ...
- * 
- * <pre>
- * Class defined in <code>class</code> element must implement this interface. Name of preprocessor from <code>name</code> element and configuration structure stored in <code>settings</code> element is then passed to the {@link #init(String, Client, IJIRAIssueIndexStructureBuilder, Map)} method.
+ * Interface for components used to preprocess structured data before other action, eg. indexed document is created from
+ * them. Instances may be created from configuration using {@link StructuredContentPreprocessorFactory}.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */

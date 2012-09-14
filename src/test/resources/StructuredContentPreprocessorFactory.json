@@ -1,0 +1,20 @@
+{
+    "preprocessors" : [
+        { 
+            "name"     : "Status Normalizer",
+            "class"    : "org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorMock",
+            "settings" : {
+                "some_setting_1_1" : "value1",
+                "some_setting_1_2" : "value2"
+            } 
+        },
+        { 
+            "name"     : "Issue type Normalizer",
+            "class"    : "org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorMock",
+            "settings" : {
+                "some_setting_2_1" : "value1",
+                "some_setting_2_2" : "value2"
+            } 
+        }
+    ]
+}

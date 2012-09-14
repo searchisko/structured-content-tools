@@ -19,6 +19,7 @@ import org.elasticsearch.common.settings.SettingsException;
  */
 public abstract class StructuredContentPreprocessorBase implements StructuredContentPreprocessor {
 
+  // TODO use log4j logger instead ES logger!
   protected ESLogger logger = null;
 
   protected String name;

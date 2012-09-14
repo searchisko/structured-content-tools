@@ -85,7 +85,8 @@ public class SimpleValueMapMapperPreprocessorTest {
     Assert.assertNull(tested.valueMap);
 
     // case - default value original
-    settings.put(SimpleValueMapMapperPreprocessor.CFG_VALUE_DEFAULT, SimpleValueMapMapperPreprocessor.DEFAULT_VALUE_ORIGINAL);
+    settings.put(SimpleValueMapMapperPreprocessor.CFG_VALUE_DEFAULT,
+        SimpleValueMapMapperPreprocessor.DEFAULT_VALUE_ORIGINAL);
     tested.init("Test mapper", client, settings);
     Assert.assertEquals("Test mapper", tested.getName());
     Assert.assertEquals(client, tested.client);
@@ -119,7 +120,7 @@ public class SimpleValueMapMapperPreprocessorTest {
 
     SimpleValueMapMapperPreprocessor tested = new SimpleValueMapMapperPreprocessor();
     tested.init("Test mapper", client,
-        StructureUtils.loadJSONFromJarPackagedFile("/preproc/SimpleValueMapMapper_preprocessData.json"));
+        StructureUtils.loadJSONFromJarPackagedFile("/SimpleValueMapMapper_preprocessData.json"));
 
     // case - not NPE
     tested.preprocessData(null);

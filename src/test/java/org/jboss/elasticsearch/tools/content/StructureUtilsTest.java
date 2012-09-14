@@ -23,19 +23,79 @@ import org.junit.Test;
  */
 public class StructureUtilsTest {
 
+  private static final String TEST_KEY = "tkey";
+
   @Test
-  public void nodeIntegerValue() {
-    Assert.assertNull(StructureUtils.nodeIntegerValue(null));
-    Assert.assertEquals(new Integer(10), StructureUtils.nodeIntegerValue(new Integer(10)));
-    Assert.assertEquals(new Integer(10), StructureUtils.nodeIntegerValue(new Short("10")));
-    Assert.assertEquals(new Integer(10), StructureUtils.nodeIntegerValue(new Long("10")));
-    Assert.assertEquals(new Integer(10), StructureUtils.nodeIntegerValue("10"));
+  public void getIntegerValue() {
+    Assert.assertNull(StructureUtils.getIntegerValue(null, "aa"));
+
+    Map<String, Object> values = new HashMap<String, Object>();
     try {
-      StructureUtils.nodeIntegerValue("ahoj");
+      Assert.assertNull(StructureUtils.getIntegerValue(values, null));
+      Assert.fail();
+    } catch (IllegalArgumentException e) {
+      // ok
+    }
+    try {
+      Assert.assertNull(StructureUtils.getIntegerValue(values, "  "));
+      Assert.fail();
+    } catch (IllegalArgumentException e) {
+      // ok
+    }
+
+    Assert.assertNull(StructureUtils.getIntegerValue(values, TEST_KEY));
+
+    values.put(TEST_KEY, new Integer(10));
+    Assert.assertEquals(new Integer(10), StructureUtils.getIntegerValue(values, TEST_KEY));
+
+    values.put(TEST_KEY, new Short("1"));
+    Assert.assertEquals(new Integer(1), StructureUtils.getIntegerValue(values, TEST_KEY));
+
+    values.put(TEST_KEY, new Long("1000"));
+    Assert.assertEquals(new Integer(1000), StructureUtils.getIntegerValue(values, TEST_KEY));
+
+    values.put(TEST_KEY, "100");
+    Assert.assertEquals(new Integer(100), StructureUtils.getIntegerValue(values, TEST_KEY));
+    try {
+      values.put(TEST_KEY, "ahoj");
+      Assert.assertEquals(new Integer(10), StructureUtils.getIntegerValue(values, TEST_KEY));
       Assert.fail("No NumberFormatException thrown.");
     } catch (NumberFormatException e) {
       // OK
     }
+  }
+
+  @Test
+  public void getStringValue() {
+    Assert.assertNull(StructureUtils.getStringValue(null, "aa"));
+
+    Map<String, Object> values = new HashMap<String, Object>();
+    try {
+      Assert.assertNull(StructureUtils.getStringValue(values, null));
+      Assert.fail();
+    } catch (IllegalArgumentException e) {
+      // ok
+    }
+    try {
+      Assert.assertNull(StructureUtils.getStringValue(values, "  "));
+      Assert.fail();
+    } catch (IllegalArgumentException e) {
+      // ok
+    }
+
+    Assert.assertNull(StructureUtils.getStringValue(values, TEST_KEY));
+
+    values.put(TEST_KEY, new Integer(10));
+    Assert.assertEquals("10", StructureUtils.getStringValue(values, TEST_KEY));
+
+    values.put(TEST_KEY, new Short("1"));
+    Assert.assertEquals("1", StructureUtils.getStringValue(values, TEST_KEY));
+
+    values.put(TEST_KEY, new Long("1000"));
+    Assert.assertEquals("1000", StructureUtils.getStringValue(values, TEST_KEY));
+
+    values.put(TEST_KEY, "100");
+    Assert.assertEquals("100", StructureUtils.getStringValue(values, TEST_KEY));
   }
 
   @Test
