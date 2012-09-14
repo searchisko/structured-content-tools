@@ -12,13 +12,14 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.xcontent.support.XContentMapValues;
 
 /**
- * Issue data preprocessor which allows to map simple value from JIRA to other value over configured Map structure.
- * Optional default value can be used for values not found in map. Example of configuration for this preprocessor:
+ * Content preprocessor which allows to perform mapping of simple value from input over configured Map structure to
+ * another or same field. Optional default value can be used for values not found in mapping. Example of configuration
+ * for this preprocessor:
  * 
  * <pre>
  * { 
  *     "name"     : "Status Normalizer",
- *     "class"    : "org.jboss.elasticsearch.river.jira.preproc.SimpleValueMapMapper",
+ *     "class"    : "org.jboss.elasticsearch.tools.content.SimpleValueMapMapperPreprocessor",
  *     "settings" : {
  *         "source_field"  : "fields.status.name",
  *         "target_field"  : "dcp_issue_status",
@@ -34,17 +35,19 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  * 
  * Options are:
  * <ul>
- * <li><code>source_field</code> - source field in JIRA issue data. Dot notation for nested values can be used here (see
+ * <li><code>source_field</code> - source field in input data. Dot notation for nested values can be used here (see
  * {@link XContentMapValues#extractValue(String, Map)}).
- * <li><code>target_field</code> - target field in JIRA issue data to store mapped value into.
- * <li><code>value_default</code> - optional default value used if Map do not provide mapping. If not set then target
- * field is leaved empty for values not found in mapping. You can use <code>{original}</code> value here which means
- * that original value from JIRA may be placed to target field if not found in Map structure.
- * <li><code>value_mapping</code> - Map structure for value mapping. Key id value from source field, Value is value for
- * target field.
+ * <li><code>target_field</code> - target field in data to store mapped value into. Can be same as input field.
+ * <li><code>value_default</code> - optional default value used if <code>value_mapping</code> Map do not provide
+ * mapping. If not set then target field is leaved empty for values not found in mapping. You can use
+ * <code>{@value #DEFAULT_VALUE_ORIGINAL}</code> value here which means that original value from source field may be
+ * placed to target field if not found in <code>value_mapping</code> Map structure.
+ * <li><code>value_mapping</code> - Map structure for value mapping. Key is value from <code>source_field</code>, Value
+ * is value for for <code>target_field</code>.
  * </ul>
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
+ * @see StructuredContentPreprocessorFactory
  */
 public class SimpleValueMapMapperPreprocessor extends StructuredContentPreprocessorBase {
 
@@ -54,7 +57,7 @@ public class SimpleValueMapMapperPreprocessor extends StructuredContentPreproces
   protected static final String CFG_VALUE_MAPPING = "value_mapping";
 
   /**
-   * value for {@link #defaultValue} meaning than original value from JIRA can be used as default.
+   * value for {@link #defaultValue} meaning than original value from {@link #fieldSource} can be used as default.
    */
   public static final String DEFAULT_VALUE_ORIGINAL = "{original}";
 
@@ -97,8 +100,10 @@ public class SimpleValueMapMapperPreprocessor extends StructuredContentPreproces
     if (v == null) {
       putDefaultValue(data, null);
     } else if (v instanceof Map || v instanceof Collection || v.getClass().isArray()) {
-      logger.warn("issue value for field '" + fieldSource
-          + "' is not simple value (but is List or Array) to be processed by '" + name + "' preprocessor");
+      logger
+          .warn("value for field '" + fieldSource
+              + "' is not simple value (but is List or Array or Map), so can't be processed by '" + name
+              + "' preprocessor");
     } else {
       String origValue = v.toString();
       String newVal = null;

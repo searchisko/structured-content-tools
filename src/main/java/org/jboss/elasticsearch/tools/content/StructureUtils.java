@@ -6,17 +6,11 @@ package org.jboss.elasticsearch.tools.content;
  * as indicated by the @authors tag. All rights reserved.
  */
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-
-import org.elasticsearch.common.settings.SettingsException;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.XContentType;
 
 /**
  * Utility functions for structured content manipulation. Structured content is commonly represented as Map of Maps
@@ -122,27 +116,6 @@ public class StructureUtils {
 
     mapToChange.clear();
     mapToChange.putAll(newMap);
-  }
-
-  /**
-   * Read JSON file from classpath into Map of Map structure.
-   * 
-   * @param filePath path inside jar/classpath pointing to JSON file to read
-   * @return parsed JSON file
-   * @throws SettingsException
-   */
-  public static Map<String, Object> loadJSONFromJarPackagedFile(String filePath) throws SettingsException {
-    XContentParser parser = null;
-    try {
-      parser = XContentFactory.xContent(XContentType.JSON).createParser(
-          StructureUtils.class.getResourceAsStream(filePath));
-      return parser.mapAndClose();
-    } catch (IOException e) {
-      throw new SettingsException(e.getMessage(), e);
-    } finally {
-      if (parser != null)
-        parser.close();
-    }
   }
 
   /**

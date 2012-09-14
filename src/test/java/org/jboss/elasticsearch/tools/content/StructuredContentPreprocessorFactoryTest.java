@@ -27,7 +27,7 @@ public class StructuredContentPreprocessorFactoryTest {
   public void createPreprocessor() {
     Client clientMock = mock(Client.class);
 
-    List<Map<String, Object>> preprocessorConfig = (List<Map<String, Object>>) (StructureUtils
+    List<Map<String, Object>> preprocessorConfig = (List<Map<String, Object>>) (TestUtils
         .loadJSONFromJarPackagedFile("/StructuredContentPreprocessorFactory.json")).get("preprocessors");
     StructuredContentPreprocessor preproc = StructuredContentPreprocessorFactory.createPreprocessor(
         preprocessorConfig.get(0), clientMock);
@@ -44,7 +44,7 @@ public class StructuredContentPreprocessorFactoryTest {
   public void createPreprocessors() {
     Client clientMock = mock(Client.class);
 
-    List<Map<String, Object>> preprocessorConfig = (List<Map<String, Object>>) (StructureUtils
+    List<Map<String, Object>> preprocessorConfig = (List<Map<String, Object>>) (TestUtils
         .loadJSONFromJarPackagedFile("/StructuredContentPreprocessorFactory.json")).get("preprocessors");
     List<StructuredContentPreprocessor> preprocs = StructuredContentPreprocessorFactory.createPreprocessors(
         preprocessorConfig, clientMock);

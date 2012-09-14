@@ -120,7 +120,7 @@ public class SimpleValueMapMapperPreprocessorTest {
 
     SimpleValueMapMapperPreprocessor tested = new SimpleValueMapMapperPreprocessor();
     tested.init("Test mapper", client,
-        StructureUtils.loadJSONFromJarPackagedFile("/SimpleValueMapMapper_preprocessData.json"));
+        TestUtils.loadJSONFromJarPackagedFile("/SimpleValueMapMapper_preprocessData.json"));
 
     // case - not NPE
     tested.preprocessData(null);
