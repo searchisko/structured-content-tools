@@ -12,5 +12,6 @@ To simplify preprocessors implementation you can use methods from `org.jboss.ela
 
 Framework contains some generic configurable preprocessors implementation too:
 * [AddValuePreprocessor](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/AddValuePreprocessor.java) - allows to add value to some target field.
+* [AddCurrentTimestampPreprocessor](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/AddCurrentTimestampPreprocessor.java) - allows to add current timestamp to some target field.
 * [SimpleValueMapMapperPreprocessor](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/SimpleValueMapMapperPreprocessor.java) - allows to perform mapping of simple value from source field over configured Map mapping structure to targed field. Optional default value can be used for values not found in mapping Map.
 

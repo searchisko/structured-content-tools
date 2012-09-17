@@ -185,6 +185,5 @@ public class AddValuePreprocessorTest {
       tested.preprocessData(values);
       Assert.assertEquals("Value", XContentMapValues.extractValue(tested.field, values));
     }
-
   }
 }
