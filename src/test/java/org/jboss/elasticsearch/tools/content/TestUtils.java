@@ -18,7 +18,7 @@ import org.elasticsearch.common.xcontent.XContentType;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
-public class TestUtils {
+public abstract class TestUtils {
 
   /**
    * Read JSON file from classpath into Map of Map structure.
