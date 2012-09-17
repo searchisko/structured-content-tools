@@ -54,6 +54,21 @@ public abstract class StructuredContentPreprocessorBase implements StructuredCon
     }
   }
 
+  /**
+   * Validate configuration object is not null or empty in ase of String. Useful for your {@link #init(Map)}
+   * implementation.
+   * 
+   * @param value to check
+   * @param configFieldName name of field in preprocessor settings structure. Used for error message.
+   * @throws SettingsException thrown if value is null or empty
+   */
+  protected void validateConfigurationObjectNotEmpty(Object value, String configFieldName) throws SettingsException {
+    if (value == null || (value instanceof String && ValueUtils.isEmpty((String) value))) {
+      throw new SettingsException("Missing or empty 'settings/" + configFieldName + "' configuration value for '"
+          + name + "' preprocessor");
+    }
+  }
+
   @Override
   public String getName() {
     return name;

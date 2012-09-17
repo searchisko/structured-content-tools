@@ -12,9 +12,9 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.xcontent.support.XContentMapValues;
 
 /**
- * Content preprocessor which allows to perform mapping of simple value from input over configured Map structure to
- * another or same field. Optional default value can be used for values not found in mapping. Example of configuration
- * for this preprocessor:
+ * Content preprocessor which allows to perform mapping of simple value from source field over configured Map mapping
+ * structure to another or same target field. Optional default value can be used for values not found in mapping.
+ * Example of configuration for this preprocessor:
  * 
  * <pre>
  * { 
@@ -37,7 +37,8 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  * <ul>
  * <li><code>source_field</code> - source field in input data. Dot notation for nested values can be used here (see
  * {@link XContentMapValues#extractValue(String, Map)}).
- * <li><code>target_field</code> - target field in data to store mapped value into. Can be same as input field.
+ * <li><code>target_field</code> - target field in data to store mapped value into. Can be same as input field. Dot
+ * notation can be used here for structure nesting.
  * <li><code>value_default</code> - optional default value used if <code>value_mapping</code> Map do not provide
  * mapping. If not set then target field is leaved empty for values not found in mapping. You can use
  * <code>{@value #DEFAULT_VALUE_ORIGINAL}</code> value here which means that original value from source field may be
@@ -118,15 +119,15 @@ public class SimpleValueMapMapperPreprocessor extends StructuredContentPreproces
     return data;
   }
 
-  private void putDefaultValue(Map<String, Object> issueData, String originalValue) {
+  private void putDefaultValue(Map<String, Object> data, String originalValue) {
     if (defaultValue != null && !defaultValueOriginal) {
-      putTargetValue(issueData, defaultValue);
+      putTargetValue(data, defaultValue);
     } else if (defaultValueOriginal && originalValue != null) {
-      putTargetValue(issueData, originalValue);
+      putTargetValue(data, originalValue);
     }
   }
 
-  protected void putTargetValue(Map<String, Object> issueData, String value) {
-    StructureUtils.putValueIntoMapOfMaps(issueData, fieldTarget, value);
+  protected void putTargetValue(Map<String, Object> data, String value) {
+    StructureUtils.putValueIntoMapOfMaps(data, fieldTarget, value);
   }
 }
