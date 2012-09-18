@@ -6,7 +6,9 @@
 package org.jboss.elasticsearch.tools.content;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -66,6 +68,62 @@ public class ValueUtilsTest {
     c.add("b");
     c.add("task");
     Assert.assertEquals("ahoj,b,task", ValueUtils.createCsvString(c));
+  }
+
+  @Test
+  public void processStringValuePatternReplacement() {
+
+    // case - no NPE on empty patternValue
+    Assert.assertNull(ValueUtils.processStringValuePatternReplacement(null, null));
+    Map<String, Object> data = new HashMap<String, Object>();
+    Assert.assertNull(ValueUtils.processStringValuePatternReplacement(null, data));
+
+    // case - empty patternValue handling
+    Assert.assertEquals("", ValueUtils.processStringValuePatternReplacement("", null));
+    Assert.assertEquals("", ValueUtils.processStringValuePatternReplacement("", data));
+
+    // case - patternValue without keys
+    Assert.assertEquals("Ahoj", ValueUtils.processStringValuePatternReplacement("Ahoj", null));
+    Assert.assertEquals("Ahoj", ValueUtils.processStringValuePatternReplacement("Ahoj", data));
+
+    // case - unclosed braces
+    Assert.assertEquals("Ahoj{", ValueUtils.processStringValuePatternReplacement("Ahoj{", data));
+    Assert.assertEquals("Ahoj{doma", ValueUtils.processStringValuePatternReplacement("Ahoj{doma", data));
+    Assert.assertEquals("{Ahoj", ValueUtils.processStringValuePatternReplacement("{Ahoj", data));
+
+    // case - simple one level key - not in data
+    Assert.assertEquals("Ahoj , welcome.",
+        ValueUtils.processStringValuePatternReplacement("Ahoj {name}, welcome.", null));
+    Assert.assertEquals("Ahoj , welcome.",
+        ValueUtils.processStringValuePatternReplacement("Ahoj {name}, welcome.", data));
+
+    // case - simple one level key - String found in data
+    data.put("name", "Joe");
+    Assert.assertEquals("Ahoj Joe, welcome.",
+        ValueUtils.processStringValuePatternReplacement("Ahoj {name}, welcome.", data));
+
+    // case - simple one level key, multiple keys - Nonstring found in data
+    data.put("count", new Integer(10));
+    Assert.assertEquals("Ahoj Joe, welcome 10 times.",
+        ValueUtils.processStringValuePatternReplacement("Ahoj {name}, welcome {count} times.", data));
+
+    // case - unclosed braces after key
+    Assert.assertEquals("Ahoj Joe, welcome 10 time{s.",
+        ValueUtils.processStringValuePatternReplacement("Ahoj {name}, welcome {count} time{s.", data));
+
+    // case - dot notation in key - not in data
+    Assert.assertEquals("Ahoj , welcome.",
+        ValueUtils.processStringValuePatternReplacement("Ahoj {user.name}, welcome.", null));
+    Assert.assertEquals("Ahoj , welcome.",
+        ValueUtils.processStringValuePatternReplacement("Ahoj {user.name}, welcome.", data));
+
+    // case - dot notation in key - found in data
+    Map<String, Object> user = new HashMap<String, Object>();
+    user.put("name", "Lena");
+    data.put("user", user);
+    Assert.assertEquals("Ahoj Lena, welcome 10 times.",
+        ValueUtils.processStringValuePatternReplacement("Ahoj {user.name}, welcome {count} times.", data));
+
   }
 
 }

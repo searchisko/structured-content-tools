@@ -8,6 +8,9 @@ package org.jboss.elasticsearch.tools.content;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+
+import org.elasticsearch.common.xcontent.support.XContentMapValues;
 
 /**
  * Utility functions for values manipulation.
@@ -97,4 +100,54 @@ public class ValueUtils {
     return sb.toString();
   }
 
+  /**
+   * This method replaces keys in input string with values from passed data Map structure. Keys are enclosed in curly
+   * braces, dot notation for deeper nesting may be used in keys. Example of value with replacement keys:
+   * <code>My name is {user.name} and surname is {user.surname}.</code>. If value is not found in data structure then
+   * empty string is used. If value in data is not String then <code>toString()</code> is used to convert it.
+   * 
+   * @param patternValue to process
+   * @param data to get replacement values from
+   * @return value with replaced keys
+   */
+  public static String processStringValuePatternReplacement(String patternValue, Map<String, Object> data) {
+    if (patternValue == null || patternValue.length() == 0)
+      return patternValue;
+    StringBuilder finalContent = new StringBuilder();
+
+    boolean inBraces = false;
+    StringBuilder bracesContent = null;
+    for (int idx = 0; idx < patternValue.length(); idx++) {
+      char ch = patternValue.charAt(idx);
+      if (!inBraces && ch == '{') {
+        inBraces = true;
+        bracesContent = new StringBuilder();
+      } else if (inBraces && ch == '}') {
+        inBraces = false;
+        String key = bracesContent.toString();
+        if (key.length() > 0) {
+          Object v = null;
+          if (data != null) {
+            if (key.contains(".")) {
+              v = XContentMapValues.extractValue(key, data);
+            } else {
+              v = data.get(key);
+            }
+          }
+          if (v != null) {
+            finalContent.append(v.toString());
+          }
+        }
+      } else if (inBraces) {
+        bracesContent.append(ch);
+      } else {
+        finalContent.append(ch);
+      }
+    }
+    // handle not closed brace
+    if (inBraces) {
+      finalContent.append("{").append(bracesContent);
+    }
+    return finalContent.toString();
+  }
 }

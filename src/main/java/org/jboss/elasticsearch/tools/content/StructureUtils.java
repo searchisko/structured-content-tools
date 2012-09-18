@@ -24,7 +24,7 @@ public class StructureUtils {
    * Typesafe get value from map as {@link Integer} object instance if possible.
    * 
    * @param values to get value from. Can be null.
-   * @param key to get value from Map. Must be defined
+   * @param key to get value from Map. Must be defined. Dot notation not supported here for nesting!
    * @return Integer value or null.
    * @throws NumberFormatException if value can't be converted to the int value
    * 
@@ -52,7 +52,7 @@ public class StructureUtils {
    * Typesafe get value from map as {@link String}. An {@link Object#toString()} is used for nonstring objects.
    * 
    * @param values to get value from. Can be null.
-   * @param key to get value from Map. Must be defined
+   * @param key to get value from Map. Must be defined. Dot notation not supported here for nesting!
    * @return value for given key as String.
    */
   public static String getStringValue(Map<String, Object> values, String key) {
