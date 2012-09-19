@@ -110,7 +110,6 @@ public class SimpleValueMapMapperPreprocessorTest {
     Assert.assertFalse(tested.defaultValueOriginal);
     Assert.assertNotNull(tested.valueMap);
     Assert.assertEquals(1, tested.valueMap.size());
-
   }
 
   @SuppressWarnings("unchecked")

@@ -5,6 +5,7 @@
  */
 package org.jboss.elasticsearch.tools.content;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.elasticsearch.client.Client;
@@ -55,15 +56,17 @@ public abstract class StructuredContentPreprocessorBase implements StructuredCon
   }
 
   /**
-   * Validate configuration object is not null or empty in ase of String. Useful for your {@link #init(Map)}
-   * implementation.
+   * Validate configuration object is not null or empty in case of String or Collection. Useful for your
+   * {@link #init(Map)} implementation.
    * 
    * @param value to check
    * @param configFieldName name of field in preprocessor settings structure. Used for error message.
    * @throws SettingsException thrown if value is null or empty
    */
+  @SuppressWarnings("unchecked")
   protected void validateConfigurationObjectNotEmpty(Object value, String configFieldName) throws SettingsException {
-    if (value == null || (value instanceof String && ValueUtils.isEmpty((String) value))) {
+    if (value == null || (value instanceof String && ValueUtils.isEmpty((String) value))
+        || ((value instanceof Collection) && ((Collection<Object>) value).isEmpty())) {
       throw new SettingsException("Missing or empty 'settings/" + configFieldName + "' configuration value for '"
           + name + "' preprocessor");
     }
