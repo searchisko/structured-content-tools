@@ -33,7 +33,7 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  * Options are:
  * <ul>
  * <li><code>source_fields</code> - array with source fields in input data. Dot notation for nested values can be used
- * here (see {@link XContentMapValues#extractValue(String, Map)}).
+ * here, lists can be in path - see {@link XContentMapValues#extractValue(String, Map)}.
  * <li><code>target_field</code> - target field in data to store final list. Dot notation can be used here for structure
  * nesting. If collected list is empty nothing is stored here.
  * </ul>
