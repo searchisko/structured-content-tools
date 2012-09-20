@@ -39,14 +39,15 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  * @see StructuredContentPreprocessorFactory
+ * @see ValueUtils#processStringValuePatternReplacement(String, Map, Object)
  */
 public class AddValuePreprocessor extends StructuredContentPreprocessorBase {
 
   protected static final String CFG_FIELD = "field";
   protected static final String CFG_VALUE = "value";
 
-  String field;
-  Object value = null;
+  protected String field;
+  protected Object value = null;
 
   @Override
   public void init(Map<String, Object> settings) throws SettingsException {
@@ -63,7 +64,7 @@ public class AddValuePreprocessor extends StructuredContentPreprocessorBase {
     if (data == null)
       return null;
     if (value != null && (value instanceof String) && ((String) value).contains("{")) {
-      value = ValueUtils.processStringValuePatternReplacement((String) value, data);
+      value = ValueUtils.processStringValuePatternReplacement((String) value, data, null);
     }
     StructureUtils.putValueIntoMapOfMaps(data, field, value);
     return data;

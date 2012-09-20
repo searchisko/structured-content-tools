@@ -14,6 +14,7 @@ import junit.framework.Assert;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.xcontent.support.XContentMapValues;
+import org.jboss.elasticsearch.tools.content.testtools.TestUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -81,19 +82,6 @@ public class SimpleValueMapMapperPreprocessorTest {
     Assert.assertEquals("source", tested.fieldSource);
     Assert.assertEquals("target", tested.fieldTarget);
     Assert.assertNull(tested.defaultValue);
-    Assert.assertFalse(tested.defaultValueOriginal);
-    Assert.assertNull(tested.valueMap);
-
-    // case - default value original
-    settings.put(SimpleValueMapMapperPreprocessor.CFG_VALUE_DEFAULT,
-        SimpleValueMapMapperPreprocessor.DEFAULT_VALUE_ORIGINAL);
-    tested.init("Test mapper", client, settings);
-    Assert.assertEquals("Test mapper", tested.getName());
-    Assert.assertEquals(client, tested.client);
-    Assert.assertEquals("source", tested.fieldSource);
-    Assert.assertEquals("target", tested.fieldTarget);
-    Assert.assertEquals(SimpleValueMapMapperPreprocessor.DEFAULT_VALUE_ORIGINAL, tested.defaultValue);
-    Assert.assertTrue(tested.defaultValueOriginal);
     Assert.assertNull(tested.valueMap);
 
     // case - some default value and mapping here
@@ -107,7 +95,6 @@ public class SimpleValueMapMapperPreprocessorTest {
     Assert.assertEquals("source", tested.fieldSource);
     Assert.assertEquals("target", tested.fieldTarget);
     Assert.assertEquals("Default", tested.defaultValue);
-    Assert.assertFalse(tested.defaultValueOriginal);
     Assert.assertNotNull(tested.valueMap);
     Assert.assertEquals(1, tested.valueMap.size());
   }
@@ -118,8 +105,8 @@ public class SimpleValueMapMapperPreprocessorTest {
     Client client = Mockito.mock(Client.class);
 
     SimpleValueMapMapperPreprocessor tested = new SimpleValueMapMapperPreprocessor();
-    tested.init("Test mapper", client,
-        TestUtils.loadJSONFromJarPackagedFile("/SimpleValueMapMapper_preprocessData.json"));
+    tested
+        .init("Test mapper", client, TestUtils.loadJSONFromClasspathFile("/SimpleValueMapMapper_preprocessData.json"));
 
     // case - not NPE
     tested.preprocessData(null);
@@ -161,7 +148,7 @@ public class SimpleValueMapMapperPreprocessorTest {
 
     // case - default set to original marker
     tested.fieldSource = "source";
-    tested.defaultValueOriginal = true;
+    tested.defaultValue = "{" + ValueUtils.PATTERN_KEY_ORIGINAL_VALUE + "}";
     {
       Map<String, Object> values = new HashMap<String, Object>();
       values.put("source", "unknown");
@@ -169,8 +156,18 @@ public class SimpleValueMapMapperPreprocessorTest {
       Assert.assertEquals("unknown", values.get("target"));
     }
 
+    // case - more complicated pattern in default value
+    tested.fieldSource = "source";
+    tested.defaultValue = "I'm {name} and no map value is found for '{" + ValueUtils.PATTERN_KEY_ORIGINAL_VALUE + "}'";
+    {
+      Map<String, Object> values = new HashMap<String, Object>();
+      values.put("source", "unknown");
+      values.put("name", "Joe");
+      tested.preprocessData(values);
+      Assert.assertEquals("I'm Joe and no map value is found for 'unknown'", values.get("target"));
+    }
+
     // case - default not set so nothing in target field
-    tested.defaultValueOriginal = false;
     tested.defaultValue = null;
     {
       Map<String, Object> values = new HashMap<String, Object>();

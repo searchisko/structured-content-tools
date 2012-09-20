@@ -101,16 +101,25 @@ public class ValueUtils {
   }
 
   /**
+   * Key used in {@link #processStringValuePatternReplacement(String, Map, Object)} to indicate original value.
+   */
+  public static final String PATTERN_KEY_ORIGINAL_VALUE = "__original";
+
+  /**
    * This method replaces keys in input string with values from passed data Map structure. Keys are enclosed in curly
-   * braces, dot notation for deeper nesting may be used in keys. Example of value with replacement keys:
+   * braces, dot notation for deeper nesting may be used in keys. Special key
+   * <code>{@value #PATTERN_KEY_ORIGINAL_VALUE}</code> is used to be replaced by original value passed to this method as
+   * separate parameter. Example of value with replacement keys:
    * <code>My name is {user.name} and surname is {user.surname}.</code>. If value is not found in data structure then
    * empty string is used. If value in data is not String then <code>toString()</code> is used to convert it.
    * 
    * @param patternValue to process
    * @param data to get replacement values from
+   * @param originalValue used in pattern if {@value #PATTERN_KEY_ORIGINAL_VALUE} is used as key
    * @return value with replaced keys
    */
-  public static String processStringValuePatternReplacement(String patternValue, Map<String, Object> data) {
+  public static String processStringValuePatternReplacement(String patternValue, Map<String, Object> data,
+      Object originalValue) {
     if (patternValue == null || patternValue.length() == 0)
       return patternValue;
     StringBuilder finalContent = new StringBuilder();
@@ -127,7 +136,9 @@ public class ValueUtils {
         String key = bracesContent.toString();
         if (key.length() > 0) {
           Object v = null;
-          if (data != null) {
+          if (PATTERN_KEY_ORIGINAL_VALUE.equals(key)) {
+            v = originalValue;
+          } else if (data != null) {
             if (key.contains(".")) {
               v = XContentMapValues.extractValue(key, data);
             } else {

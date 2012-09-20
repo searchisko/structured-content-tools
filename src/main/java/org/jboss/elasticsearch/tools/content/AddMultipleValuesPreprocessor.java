@@ -41,7 +41,7 @@ import org.elasticsearch.common.settings.SettingsException;
  */
 public class AddMultipleValuesPreprocessor extends StructuredContentPreprocessorBase {
 
-  Map<String, Object> fields;
+  protected Map<String, Object> fields;
 
   @Override
   public void init(Map<String, Object> settings) throws SettingsException {
@@ -58,7 +58,7 @@ public class AddMultipleValuesPreprocessor extends StructuredContentPreprocessor
     for (String key : fields.keySet()) {
       Object value = fields.get(key);
       if (value != null && (value instanceof String) && ((String) value).contains("{")) {
-        value = ValueUtils.processStringValuePatternReplacement((String) value, data);
+        value = ValueUtils.processStringValuePatternReplacement((String) value, data, null);
       }
       StructureUtils.putValueIntoMapOfMaps(data, key, value);
     }

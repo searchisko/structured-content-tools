@@ -14,6 +14,7 @@ import junit.framework.Assert;
 
 import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.xcontent.support.XContentMapValues;
+import org.jboss.elasticsearch.tools.content.testtools.TestUtils;
 import org.junit.Test;
 
 /**
@@ -99,7 +100,7 @@ public class ValuesCollectingPreprocessorTest {
   @Test
   public void preprocessData() {
     ValuesCollectingPreprocessor tested = new ValuesCollectingPreprocessor();
-    tested.init("Test mapper", null, TestUtils.loadJSONFromJarPackagedFile("/ValuesCollecting_preprocessData.json"));
+    tested.init("Test mapper", null, TestUtils.loadJSONFromClasspathFile("/ValuesCollecting_preprocessData.json"));
 
     // case - not NPE
     tested.preprocessData(null);

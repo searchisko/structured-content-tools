@@ -13,6 +13,7 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.elasticsearch.client.Client;
+import org.jboss.elasticsearch.tools.content.testtools.TestUtils;
 import org.junit.Test;
 
 /**
@@ -28,7 +29,7 @@ public class StructuredContentPreprocessorFactoryTest {
     Client clientMock = mock(Client.class);
 
     List<Map<String, Object>> preprocessorConfig = (List<Map<String, Object>>) (TestUtils
-        .loadJSONFromJarPackagedFile("/StructuredContentPreprocessorFactory.json")).get("preprocessors");
+        .loadJSONFromClasspathFile("/StructuredContentPreprocessorFactory.json")).get("preprocessors");
     StructuredContentPreprocessor preproc = StructuredContentPreprocessorFactory.createPreprocessor(
         preprocessorConfig.get(0), clientMock);
 
@@ -45,7 +46,7 @@ public class StructuredContentPreprocessorFactoryTest {
     Client clientMock = mock(Client.class);
 
     List<Map<String, Object>> preprocessorConfig = (List<Map<String, Object>>) (TestUtils
-        .loadJSONFromJarPackagedFile("/StructuredContentPreprocessorFactory.json")).get("preprocessors");
+        .loadJSONFromClasspathFile("/StructuredContentPreprocessorFactory.json")).get("preprocessors");
     List<StructuredContentPreprocessor> preprocs = StructuredContentPreprocessorFactory.createPreprocessors(
         preprocessorConfig, clientMock);
     Assert.assertEquals(2, preprocs.size());

@@ -40,15 +40,18 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  * <li><code>target_field</code> - target field in data to store mapped value into. Can be same as input field. Dot
  * notation can be used here for structure nesting.
  * <li><code>value_default</code> - optional default value used if <code>value_mapping</code> Map do not provide
- * mapping. If not set then target field is leaved empty for values not found in mapping. You can use
- * <code>{@value #DEFAULT_VALUE_ORIGINAL}</code> value here which means that original value from source field may be
- * placed to target field if not found in <code>value_mapping</code> Map structure.
+ * mapping. If not set then target field is leaved empty for values not found in mapping. You can use pattern for keys
+ * replacement from other values in data in default value. Keys are enclosed in curly braces, dot notation for deeper
+ * nesting may be used in keys. Special key '<code>__original</code>' means that original value from source field will
+ * be used here. Example of default value with replacement keys ' <code>No mapping found for value {__original}.</code>
+ * '.
  * <li><code>value_mapping</code> - Map structure for value mapping. Key is value from <code>source_field</code>, Value
  * is value for for <code>target_field</code>.
  * </ul>
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  * @see StructuredContentPreprocessorFactory
+ * @see ValueUtils#processStringValuePatternReplacement(String, Map, Object)
  */
 public class SimpleValueMapMapperPreprocessor extends StructuredContentPreprocessorBase {
 
@@ -57,16 +60,10 @@ public class SimpleValueMapMapperPreprocessor extends StructuredContentPreproces
   protected static final String CFG_VALUE_DEFAULT = "value_default";
   protected static final String CFG_VALUE_MAPPING = "value_mapping";
 
-  /**
-   * value for {@link #defaultValue} meaning than original value from {@link #fieldSource} can be used as default.
-   */
-  public static final String DEFAULT_VALUE_ORIGINAL = "{original}";
-
-  String fieldSource;
-  String fieldTarget;
-  String defaultValue = null;
-  boolean defaultValueOriginal = false;
-  Map<String, String> valueMap = null;
+  protected String fieldSource;
+  protected String fieldTarget;
+  protected String defaultValue = null;
+  protected Map<String, String> valueMap = null;
 
   @SuppressWarnings("unchecked")
   @Override
@@ -79,7 +76,6 @@ public class SimpleValueMapMapperPreprocessor extends StructuredContentPreproces
     fieldTarget = XContentMapValues.nodeStringValue(settings.get(CFG_TARGET_FIELD), null);
     validateConfigurationStringNotEmpty(fieldTarget, CFG_TARGET_FIELD);
     defaultValue = ValueUtils.trimToNull(XContentMapValues.nodeStringValue(settings.get(CFG_VALUE_DEFAULT), null));
-    defaultValueOriginal = DEFAULT_VALUE_ORIGINAL.equals(defaultValue);
     valueMap = (Map<String, String>) settings.get(CFG_VALUE_MAPPING);
     if (valueMap == null || valueMap.isEmpty()) {
       logger.warn("'settings/" + CFG_VALUE_MAPPING + "' is not defined for preprocessor '{}'", name);
@@ -120,10 +116,8 @@ public class SimpleValueMapMapperPreprocessor extends StructuredContentPreproces
   }
 
   private void putDefaultValue(Map<String, Object> data, String originalValue) {
-    if (defaultValue != null && !defaultValueOriginal) {
-      putTargetValue(data, defaultValue);
-    } else if (defaultValueOriginal && originalValue != null) {
-      putTargetValue(data, originalValue);
+    if (defaultValue != null) {
+      putTargetValue(data, ValueUtils.processStringValuePatternReplacement(defaultValue, data, originalValue));
     }
   }
 

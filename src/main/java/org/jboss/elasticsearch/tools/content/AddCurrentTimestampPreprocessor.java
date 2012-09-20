@@ -38,7 +38,7 @@ public class AddCurrentTimestampPreprocessor extends StructuredContentPreprocess
 
   protected static final String CFG_FIELD = "field";
 
-  String field;
+  protected String field;
 
   @Override
   public void init(Map<String, Object> settings) throws SettingsException {

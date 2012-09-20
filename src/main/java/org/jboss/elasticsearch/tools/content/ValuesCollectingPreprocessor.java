@@ -46,8 +46,8 @@ public class ValuesCollectingPreprocessor extends StructuredContentPreprocessorB
   protected static final String CFG_SOURCE_FIELDS = "source_fields";
   protected static final String CFG_TARGET_FIELD = "target_field";
 
-  String fieldTarget;
-  List<String> fieldsSource;
+  protected String fieldTarget;
+  protected List<String> fieldsSource;
 
   @SuppressWarnings("unchecked")
   @Override
