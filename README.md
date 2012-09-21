@@ -17,3 +17,12 @@ Framework contains some generic configurable preprocessors implementation too:
 * [`SimpleValueMapMapperPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/SimpleValueMapMapperPreprocessor.java) - allows to perform mapping of simple value from source field over configured Map mapping structure to targed field. Optional default value can be used for values not found in mapping Map.
 * [`ValuesCollectingPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/ValuesCollectingPreprocessor.java) - collects values from multiple source fields (some of them can contain lists), remove duplicities, and store values as List in target field.
 * [`ESLookupValuePreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/ESLookupValuePreprocessor.java) - uses defined value from data to lookup another value in ElasticSearch search index and put result into defined target field in data. 
+
+jar is available over JBoss maven repository, you can use this dependency n your `pom.xml`:
+
+	<dependency>
+	  <groupId>org.jboss.elasticsearch</groupId>
+	  <artifactId>structured-content-tools</artifactId>
+	  <version>1.0.0</version>
+	</dependency>
+
