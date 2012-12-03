@@ -18,7 +18,7 @@ Framework contains some generic configurable preprocessors implementation too:
 * [`ValuesCollectingPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/ValuesCollectingPreprocessor.java) - collects values from multiple source fields (some of them can contain lists), remove duplicities, and store values as List in target field.
 * [`ESLookupValuePreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/ESLookupValuePreprocessor.java) - uses defined value from data to lookup another value in ElasticSearch search index and put result into defined target field in data. 
 
-jar is available over JBoss maven repository, you can use this dependency n your `pom.xml`:
+jar is available over [JBoss maven repository](https://community.jboss.org/docs/DOC-15169), you can use this dependency snippet in your `pom.xml`:
 
 	<dependency>
 	  <groupId>org.jboss.elasticsearch</groupId>
