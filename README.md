@@ -17,7 +17,7 @@ Framework contains some generic configurable preprocessors implementation too:
 * [`AddCurrentTimestampPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/AddCurrentTimestampPreprocessor.java) - allows to add current timestamp to some target field.
 * [`SimpleValueMapMapperPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/SimpleValueMapMapperPreprocessor.java) - allows to perform mapping of simple value from source field over configured Map mapping structure to targed field. Optional default value can be used for values not found in mapping Map.
 * [`ValuesCollectingPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/ValuesCollectingPreprocessor.java) - collects values from multiple source fields (some of them can contain lists), remove duplicities, and store values as List in target field.
-* [`ESLookupValuePreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/ESLookupValuePreprocessor.java) - uses defined value from data to lookup another value in ElasticSearch search index and put result into defined target field in data.
+* [`ESLookupValuePreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/ESLookupValuePreprocessor.java) - uses defined value from data to lookup document in ElasticSearch search index and put defined fields from it into defined target fields in data.
 * [`MaxTimestampPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/MaxTimestampPreprocessor.java) - selects max timestamp value from array in source field and store it into target field
 * [`RequiredValidatorPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/RequiredValidatorPreprocessor.java) - checks defined source field for 'required' condition and throws exception if not match
 
@@ -26,6 +26,6 @@ jar is available over [JBoss maven repository](https://community.jboss.org/docs/
 	<dependency>
 	  <groupId>org.jboss.elasticsearch</groupId>
 	  <artifactId>structured-content-tools</artifactId>
-	  <version>1.1.0</version>
+	  <version>1.2.0</version>
 	</dependency>
 
