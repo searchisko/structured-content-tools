@@ -1,4 +1,5 @@
 {
 	"code" : "jbossorg",
+	"name" : "jboss.org",
 	"jbossorg_jira_project" : ["ORG", "ORGA"]
 }

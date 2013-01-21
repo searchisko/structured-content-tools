@@ -3,7 +3,6 @@
           "index_type"        : "project",
           "source_field"      : "projectcode",
           "idx_search_field"  : "jbossorg_jira_project",
-          "idx_result_field"  : "code",
-          "target_field"      : "transformedcode",
+          "result_mapping"    : [ {"idx_result_field":"code", "target_field":"transformedcode"} ],
           "source_bases"      : ["author", "editor", "comments.author", "comments.editor"]
 } 

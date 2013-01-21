@@ -1,4 +1,5 @@
 {
 	"code" : "infinispan",
+	"name" : "Infinispan",
 	"jbossorg_jira_project" : "ISPN"
 }

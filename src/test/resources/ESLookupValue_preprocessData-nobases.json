@@ -3,7 +3,8 @@
           "index_type"        : "project",
           "source_field"      : "fields.projectcode",
           "idx_search_field"  : "jbossorg_jira_project",
-          "idx_result_field"  : "code",
-          "target_field"      : "project.code",
-          "value_default"     : "defval"
+          "result_mapping"    : [ 
+              {"idx_result_field":"code", "target_field":"project.code", "value_default":"defval"},
+              {"idx_result_field":"name", "target_field":"project_name"} 
+          ]
 } 
