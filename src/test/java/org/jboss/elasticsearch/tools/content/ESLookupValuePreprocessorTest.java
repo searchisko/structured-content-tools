@@ -152,6 +152,23 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 			tested.init("Test mapper", client,
 					TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData-nobases.json"));
 
+			// case - lookup index is missing so default value is used
+			{
+				Map<String, Object> values = new HashMap<String, Object>();
+				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "AAA");
+				tested.preprocessData(values);
+				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
+				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
+
+				// case - test rewrite on target field
+				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "BBB");
+				StructureUtils.putValueIntoMapOfMaps(values, "project.code", "jjj");
+				StructureUtils.putValueIntoMapOfMaps(values, "project_name", "aaa");
+				tested.preprocessData(values);
+				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
+				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
+			}
+
 			// fill testing data
 			client.admin().indices().prepareCreate(tested.indexName).execute().actionGet();
 			client.prepareIndex(tested.indexName, tested.indexType).setId("data1")
@@ -286,8 +303,8 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				assertProjectStructure(comment1.get("author"), "ORG", "jboss.org project", "jbossorg");
 				assertProjectStructure(comment1.get("editor"), "ORG", "jboss.org project", "jbossorg");
 				assertProjectStructure(comment2.get("author"), "ISPN", "Infinispan", "infinispan");
-
 			}
+
 		} finally {
 			finalizeESClientForUnitTest();
 		}

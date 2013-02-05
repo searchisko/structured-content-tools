@@ -353,15 +353,7 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 						value.put(mappingRecord.get(CFG_target_field), v);
 					}
 				} else {
-					for (Map<String, String> mappingRecord : resultMapping) {
-						if (mappingRecord.get(CFG_value_default) != null) {
-							Object v = ValueUtils.processStringValuePatternReplacement(mappingRecord.get(CFG_value_default), data,
-									sourceValue);
-							value.put(mappingRecord.get(CFG_target_field), v);
-						} else {
-							value.put(mappingRecord.get(CFG_target_field), null);
-						}
-					}
+					processDefaultValues(sourceValue, data, value);
 				}
 
 				esExceptionWarned = false;
@@ -371,6 +363,7 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 					logger.warn("ElasticSearch lookup failed due '{}:{}' so default value is used for field instead", e
 							.getClass().getName(), e.getMessage());
 				}
+				processDefaultValues(sourceValue, data, value);
 			}
 		}
 
@@ -378,6 +371,18 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 			context.lookupCache.put(sourceValue, value);
 
 		return value;
+	}
+
+	private void processDefaultValues(Object sourceValue, Map<String, Object> data, Map<String, Object> value) {
+		for (Map<String, String> mappingRecord : resultMapping) {
+			if (mappingRecord.get(CFG_value_default) != null) {
+				Object v = ValueUtils.processStringValuePatternReplacement(mappingRecord.get(CFG_value_default), data,
+						sourceValue);
+				value.put(mappingRecord.get(CFG_target_field), v);
+			} else {
+				value.put(mappingRecord.get(CFG_target_field), null);
+			}
+		}
 	}
 
 	private class LookupContenxt {
