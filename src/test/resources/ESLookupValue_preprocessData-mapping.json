@@ -1,0 +1,7 @@
+{ 
+  "project" : {
+    "properties" : {    
+      "jbossorg_jira_project" : {"type" : "string", "analyzer" : "keyword"}
+    }
+  }
+}

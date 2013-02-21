@@ -48,6 +48,8 @@ import org.elasticsearch.search.SearchHit;
  * <li><code>index_name<code> - name of search index to lookup values in
  * <li><code>index_type<code> - name of type in search index to lookup values in
  * <li><code>source_field<code> - source field in input data to be used as 'lookup key'. Dot notation for nested values can be used here.
+ * <li><code>source_value<code> - value to be used as 'lookup key'. Can be used as alternative instead of <code>source_field<code>. 
+ * You can use pattern for keys replacement with values from input data here. Keys are enclosed in curly braces, dot notation for deeper nesting may be used in keys.  
  * <li><code>idx_search_field<code> - field in search index document to be asked for 'lookup key' obtained from source field. ElasticSearch <code>text</code>
  * filter is used against this field. Search is not performed if 'lookup key' is empty.
  * <li>
@@ -64,8 +66,8 @@ import org.elasticsearch.search.SearchHit;
  * </ul>
  * <li><code>source_bases</code> - list of fields in source data which are used as bases for lookups evaluation. If
  * defined then lookup is performed for each of this fields, <code>source_field</code>, <code>target_field</code> and
- * keys in <code>value_default</code> are resolved relatively against this base. Base must provide object or list of
- * objects. See example later. </ul>
+ * keys in <code>value_default</code> and<code>source_value</code> are resolved relatively against this base. Base must
+ * provide object or list of objects. See example later. </ul>
  * 
  * 
  * Example of configuration for this preprocessor for lookup of multiple values of same structure:
@@ -184,6 +186,7 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 	protected static final String CFG_index_name = "index_name";
 	protected static final String CFG_index_type = "index_type";
 	protected static final String CFG_source_field = "source_field";
+	protected static final String CFG_source_value = "source_value";
 	protected static final String CFG_idx_search_field = "idx_search_field";
 	protected static final String CFG_result_mapping = "result_mapping";
 	protected static final String CFG_idx_result_field = "idx_result_field";
@@ -196,6 +199,7 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 	protected String indexName;
 	protected String indexType;
 	protected String sourceField;
+	protected String sourceValuePattern;
 	protected String idxSearchField;
 	protected List<Map<String, String>> resultMapping;
 
@@ -213,7 +217,14 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 		indexType = XContentMapValues.nodeStringValue(settings.get(CFG_index_type), null);
 		validateConfigurationStringNotEmpty(indexType, CFG_index_type);
 		sourceField = XContentMapValues.nodeStringValue(settings.get(CFG_source_field), null);
-		validateConfigurationStringNotEmpty(sourceField, CFG_source_field);
+		if (ValueUtils.isEmpty(sourceField)) {
+			sourceField = null;
+			sourceValuePattern = XContentMapValues.nodeStringValue(settings.get(CFG_source_value), null);
+		}
+		if (ValueUtils.isEmpty(sourceField) && ValueUtils.isEmpty(sourceValuePattern)) {
+			throw new SettingsException("At least one of 'settings/" + CFG_source_field + "' or 'settings/"
+					+ CFG_source_value + "' configuration value must be defined for '" + name + "' preprocessor");
+		}
 		resultMapping = (List<Map<String, String>>) settings.get(CFG_result_mapping);
 		validateResultMappingConfiguration(resultMapping, CFG_result_mapping);
 		idxSearchField = XContentMapValues.nodeStringValue(settings.get(CFG_idx_search_field), null);
@@ -280,7 +291,12 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 
 	@SuppressWarnings("unchecked")
 	private void processOneSourceValue(Map<String, Object> data, LookupContenxt context) {
-		Object sourceValue = XContentMapValues.extractValue(sourceField, data);
+		Object sourceValue = null;
+		if (sourceField != null) {
+			sourceValue = XContentMapValues.extractValue(sourceField, data);
+		} else {
+			sourceValue = ValueUtils.processStringValuePatternReplacement(sourceValuePattern, data, null);
+		}
 		Map<String, Object> targetValues = null;
 		if (sourceValue instanceof Collection) {
 			if (context == null)

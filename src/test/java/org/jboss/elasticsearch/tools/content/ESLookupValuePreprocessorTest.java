@@ -76,7 +76,8 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 			Assert.fail("SettingsException must be thrown");
 		} catch (SettingsException e) {
 			Assert
-					.assertEquals("Missing or empty 'settings/source_field' configuration value for 'Test mapper' preprocessor",
+					.assertEquals(
+							"At least one of 'settings/source_field' or 'settings/source_value' configuration value must be defined for 'Test mapper' preprocessor",
 							e.getMessage());
 		}
 		try {
@@ -123,28 +124,46 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void init() {
-		ESLookupValuePreprocessor tested = new ESLookupValuePreprocessor();
-		Client client = Mockito.mock(Client.class);
 
-		Map<String, Object> settings = TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData-nobases.json");
-		tested.init("Test mapper", client, settings);
-		Assert.assertEquals(client, tested.client);
-		Assert.assertEquals("projects", tested.indexName);
-		Assert.assertEquals("project", tested.indexType);
-		Assert.assertEquals("fields.projectcode", tested.sourceField);
-		Assert.assertEquals("jbossorg_jira_project", tested.idxSearchField);
-		Assert.assertEquals(2, ((List) tested.resultMapping).size());
-		Assert.assertEquals("code", tested.resultMapping.get(0).get(ESLookupValuePreprocessor.CFG_idx_result_field));
-		Assert.assertEquals("project.code", tested.resultMapping.get(0).get(ESLookupValuePreprocessor.CFG_target_field));
-		Assert.assertEquals("defval", tested.resultMapping.get(0).get(ESLookupValuePreprocessor.CFG_value_default));
-		Assert.assertEquals("name", tested.resultMapping.get(1).get(ESLookupValuePreprocessor.CFG_idx_result_field));
-		Assert.assertEquals("project_name", tested.resultMapping.get(1).get(ESLookupValuePreprocessor.CFG_target_field));
-		Assert.assertEquals(null, tested.resultMapping.get(1).get(ESLookupValuePreprocessor.CFG_value_default));
+		{
+			ESLookupValuePreprocessor tested = new ESLookupValuePreprocessor();
+			Client client = Mockito.mock(Client.class);
+
+			Map<String, Object> settings = TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData-nobases.json");
+			tested.init("Test mapper", client, settings);
+			Assert.assertEquals(client, tested.client);
+			Assert.assertEquals("projects", tested.indexName);
+			Assert.assertEquals("project", tested.indexType);
+			Assert.assertEquals("fields.projectcode", tested.sourceField);
+			Assert.assertNull(tested.sourceValuePattern);
+			Assert.assertEquals("jbossorg_jira_project", tested.idxSearchField);
+			Assert.assertEquals(2, ((List) tested.resultMapping).size());
+			Assert.assertEquals("code", tested.resultMapping.get(0).get(ESLookupValuePreprocessor.CFG_idx_result_field));
+			Assert.assertEquals("project.code", tested.resultMapping.get(0).get(ESLookupValuePreprocessor.CFG_target_field));
+			Assert.assertEquals("defval", tested.resultMapping.get(0).get(ESLookupValuePreprocessor.CFG_value_default));
+			Assert.assertEquals("name", tested.resultMapping.get(1).get(ESLookupValuePreprocessor.CFG_idx_result_field));
+			Assert.assertEquals("project_name", tested.resultMapping.get(1).get(ESLookupValuePreprocessor.CFG_target_field));
+			Assert.assertEquals(null, tested.resultMapping.get(1).get(ESLookupValuePreprocessor.CFG_value_default));
+		}
+
+		// case - sourceValue used instead of sourceField
+		{
+			ESLookupValuePreprocessor tested = new ESLookupValuePreprocessor();
+			Client client = Mockito.mock(Client.class);
+
+			Map<String, Object> settings = TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData-nobases.json");
+			settings.put(ESLookupValuePreprocessor.CFG_source_field, "");
+			settings.put(ESLookupValuePreprocessor.CFG_source_value, "source {value}");
+			tested.init("Test mapper", client, settings);
+			Assert.assertEquals("source {value}", tested.sourceValuePattern);
+			Assert.assertNull(tested.sourceField);
+
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void preprocessData_nobases() throws Exception {
+	public void preprocessData_nobases_sourceField() throws Exception {
 		try {
 			Client client = prepareESClientForUnitTest();
 
@@ -170,17 +189,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 			}
 
 			// fill testing data
-			client.admin().indices().prepareCreate(tested.indexName).execute().actionGet();
-			client.prepareIndex(tested.indexName, tested.indexType).setId("data1")
-					.setSource(TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData_data1.json")).execute()
-					.actionGet();
-			client.prepareIndex(tested.indexName, tested.indexType).setId("data2")
-					.setSource(TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData_data2.json")).execute()
-					.actionGet();
-			client.prepareIndex(tested.indexName, tested.indexType).setId("data3")
-					.setSource(TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData_data3.json")).execute()
-					.actionGet();
-			client.admin().indices().prepareRefresh(tested.indexName).execute().actionGet();
+			prepareTestData(client, tested);
 
 			// case - lookup for existing value
 			{
@@ -229,7 +238,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				Assert.assertEquals("unknown jj for BBB", (String) XContentMapValues.extractValue("project.code", values));
 			}
 
-			// case - test handling when source value is list of values
+			// case - test handling when source field contains list of values
 			{
 				tested.resultMapping.get(0).put(ESLookupValuePreprocessor.CFG_value_default, "unknown");
 				Map<String, Object> values = new HashMap<String, Object>();
@@ -256,7 +265,101 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 	}
 
 	@Test
-	public void preprocessData_bases() throws Exception {
+	public void preprocessData_nobases_sourceValue() throws Exception {
+		try {
+			Client client = prepareESClientForUnitTest();
+
+			String testInputField = "testinputfield";
+
+			Map<String, Object> settings = TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData-nobases.json");
+			settings.remove(ESLookupValuePreprocessor.CFG_source_field);
+			settings.put(ESLookupValuePreprocessor.CFG_source_value, "{" + testInputField + "}");
+
+			ESLookupValuePreprocessor tested = new ESLookupValuePreprocessor();
+			tested.init("Test mapper", client, settings);
+
+			prepareTestData(client, tested);
+
+			// case - lookup for existing value - simple pattern in source_value
+			{
+				settings.put(ESLookupValuePreprocessor.CFG_source_value, "{" + testInputField + "}");
+				tested = new ESLookupValuePreprocessor();
+				tested.init("Test mapper", client, settings);
+
+				Map<String, Object> values = new HashMap<String, Object>();
+				StructureUtils.putValueIntoMapOfMaps(values, testInputField, "ORG");
+				tested.preprocessData(values);
+				Assert.assertEquals("jbossorg", (String) XContentMapValues.extractValue("project.code", values));
+				Assert.assertEquals("jboss.org", (String) XContentMapValues.extractValue("project_name", values));
+
+				StructureUtils.putValueIntoMapOfMaps(values, testInputField, "ORGA");
+				tested.preprocessData(values);
+				Assert.assertEquals("jbossorg", (String) XContentMapValues.extractValue("project.code", values));
+				Assert.assertEquals("jboss.org", (String) XContentMapValues.extractValue("project_name", values));
+
+				StructureUtils.putValueIntoMapOfMaps(values, testInputField, "ISPN");
+				tested.preprocessData(values);
+				Assert.assertEquals("infinispan", (String) XContentMapValues.extractValue("project.code", values));
+				Assert.assertEquals("Infinispan", (String) XContentMapValues.extractValue("project_name", values));
+			}
+
+			// case - lookup for existing value - complete pattern in source_value
+			{
+				settings.put(ESLookupValuePreprocessor.CFG_source_value, "{sv1}.{sv2}");
+				tested = new ESLookupValuePreprocessor();
+				tested.init("Test mapper", client, settings);
+
+				Map<String, Object> values = new HashMap<String, Object>();
+				StructureUtils.putValueIntoMapOfMaps(values, "sv1", "test");
+				StructureUtils.putValueIntoMapOfMaps(values, "sv2", "org");
+				tested.preprocessData(values);
+				Assert.assertEquals("jbossorg", (String) XContentMapValues.extractValue("project.code", values));
+				Assert.assertEquals("jboss.org", (String) XContentMapValues.extractValue("project_name", values));
+			}
+
+			// case - lookup for nonexisting value, test both default and not default value defined
+			{
+				settings.put(ESLookupValuePreprocessor.CFG_source_value, "{" + testInputField + "}");
+				tested = new ESLookupValuePreprocessor();
+				tested.init("Test mapper", client, settings);
+
+				Map<String, Object> values = new HashMap<String, Object>();
+				StructureUtils.putValueIntoMapOfMaps(values, testInputField, "AAA");
+				tested.preprocessData(values);
+				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
+				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
+
+				// case - test rewrite on target field
+				StructureUtils.putValueIntoMapOfMaps(values, testInputField, "BBB");
+				StructureUtils.putValueIntoMapOfMaps(values, "project.code", "jjj");
+				StructureUtils.putValueIntoMapOfMaps(values, "project_name", "aaa");
+				tested.preprocessData(values);
+				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
+				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
+			}
+
+			// test rewrite on target field and default pattern
+			{
+				settings.put(ESLookupValuePreprocessor.CFG_source_value, "{" + testInputField + "}");
+				tested = new ESLookupValuePreprocessor();
+				tested.init("Test mapper", client, settings);
+
+				Map<String, Object> values = new HashMap<String, Object>();
+				tested.resultMapping.get(0)
+						.put(ESLookupValuePreprocessor.CFG_value_default, "unknown {field} for {__original}");
+				StructureUtils.putValueIntoMapOfMaps(values, testInputField, "BBB");
+				StructureUtils.putValueIntoMapOfMaps(values, "field", "jj");
+				tested.preprocessData(values);
+				Assert.assertEquals("unknown jj for BBB", (String) XContentMapValues.extractValue("project.code", values));
+			}
+
+		} finally {
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
+	public void preprocessData_bases_sourceField() throws Exception {
 		try {
 			Client client = prepareESClientForUnitTest();
 
@@ -265,17 +368,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 					TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData-bases.json"));
 
 			// fill testing data
-			client.admin().indices().prepareCreate(tested.indexName).execute().actionGet();
-			client.prepareIndex(tested.indexName, tested.indexType).setId("data1")
-					.setSource(TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData_data1.json")).execute()
-					.actionGet();
-			client.prepareIndex(tested.indexName, tested.indexType).setId("data2")
-					.setSource(TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData_data2.json")).execute()
-					.actionGet();
-			client.prepareIndex(tested.indexName, tested.indexType).setId("data3")
-					.setSource(TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData_data3.json")).execute()
-					.actionGet();
-			client.admin().indices().prepareRefresh(tested.indexName).execute().actionGet();
+			prepareTestData(client, tested);
 
 			// case - lookup for existing value
 			{
@@ -308,6 +401,24 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 		} finally {
 			finalizeESClientForUnitTest();
 		}
+	}
+
+	private void prepareTestData(Client client, ESLookupValuePreprocessor tested) {
+		// fill testing data
+		client.admin().indices().prepareCreate(tested.indexName).execute().actionGet();
+		client.admin().indices().preparePutMapping(tested.indexName).setType(tested.indexType)
+				.setSource(TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData-mapping.json")).execute()
+				.actionGet();
+		client.prepareIndex(tested.indexName, tested.indexType).setId("data1")
+				.setSource(TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData_data1.json")).execute()
+				.actionGet();
+		client.prepareIndex(tested.indexName, tested.indexType).setId("data2")
+				.setSource(TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData_data2.json")).execute()
+				.actionGet();
+		client.prepareIndex(tested.indexName, tested.indexType).setId("data3")
+				.setSource(TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData_data3.json")).execute()
+				.actionGet();
+		client.admin().indices().prepareRefresh(tested.indexName).execute().actionGet();
 	}
 
 	private Map<String, Object> createProjectStructureMap(String projectcode, String projectname) {

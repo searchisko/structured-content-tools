@@ -1,31 +1,55 @@
 structured-content-tools
 ========================
 
-This framework contains tools useful to process/manipulate structured content represented in Java as [`Map of Maps` structure](http://wiki.fasterxml.com/JacksonInFiveMinutes#A.22Raw.22_Data_Binding_Example). 
-We use it to allow highly configurable manipulation with content before store into ElasticSearch search index, for example in [JIRA River Plugin for ElasticSearch](https://github.com/jbossorg/elasticsearch-river-jira).
+This framework contains tools useful to process/manipulate structured content 
+represented in Java as [`Map of Maps` structure](http://wiki.fasterxml.com/JacksonInFiveMinutes#A.22Raw.22_Data_Binding_Example). 
+We use it to allow highly configurable manipulation with content before store 
+into ElasticSearch search index, for example in [JIRA River Plugin for 
+ElasticSearch](https://github.com/jbossorg/elasticsearch-river-jira).
 
-Content manipulation can be done over chain of Preprocessors. Each preprocessor must implement [`org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/StructuredContentPreprocessor.java) interface.
-You can use [`org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorBase`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/StructuredContentPreprocessorBase.java) as base class for your preprocessor implementation.
-Chain of preprocessors can be loaded using methods in [`org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/StructuredContentPreprocessorFactory.java).
+Content manipulation can be done over chain of Preprocessors. Each preprocessor 
+must implement [`org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/StructuredContentPreprocessor.java) 
+interface.
+You can use [`org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorBase`](src/main/java/org/jboss/elasticsearch/tools/content/StructuredContentPreprocessorBase.java) 
+as base class for your preprocessor implementation.
+Chain of preprocessors can be loaded using methods in 
+[`org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory`](src/main/java/org/jboss/elasticsearch/tools/content/StructuredContentPreprocessorFactory.java).
 
-To simplify preprocessors implementation you can use methods from [`org.jboss.elasticsearch.tools.content.ValueUtils`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/ValueUtils.java) and [`org.jboss.elasticsearch.tools.content.StructureUtils`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/StructureUtils.java).
+To simplify preprocessors implementation you can use methods from 
+[`org.jboss.elasticsearch.tools.content.ValueUtils`](src/main/java/org/jboss/elasticsearch/tools/content/ValueUtils.java) 
+and [`org.jboss.elasticsearch.tools.content.StructureUtils`](src/main/java/org/jboss/elasticsearch/tools/content/StructureUtils.java).
 
 Framework contains some generic configurable preprocessors implementation too:
 
-* [`AddValuePreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/AddValuePreprocessor.java) - allows to add value to some target field. Value can be constant or contain pattern with keys for replacement with other data from content.
-* [`AddMultipleValuesPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/AddMultipleValuesPreprocessor.java) - allows to add multiple value to some target fields. Value can be constant or contain pattern with keys for replacement with other data from content.
-* [`AddCurrentTimestampPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/AddCurrentTimestampPreprocessor.java) - allows to add current timestamp to some target field.
-* [`SimpleValueMapMapperPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/SimpleValueMapMapperPreprocessor.java) - allows to perform mapping of simple value from source field over configured Map mapping structure to targed field. Optional default value can be used for values not found in mapping Map.
-* [`ValuesCollectingPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/ValuesCollectingPreprocessor.java) - collects values from multiple source fields (some of them can contain lists), remove duplicities, and store values as List in target field.
-* [`ESLookupValuePreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/ESLookupValuePreprocessor.java) - uses defined value from data to lookup document in ElasticSearch search index and put defined fields from it into defined target fields in data.
-* [`MaxTimestampPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/MaxTimestampPreprocessor.java) - selects max timestamp value from array in source field and store it into target field
-* [`RequiredValidatorPreprocessor`](https://github.com/jbossorg/structured-content-tools/blob/master/src/main/java/org/jboss/elasticsearch/tools/content/RequiredValidatorPreprocessor.java) - checks defined source field for 'required' condition and throws exception if not match
+* [`AddValuePreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/AddValuePreprocessor.java) - 
+  allows to add value to some target field. Value can be constant or contain 
+  pattern with keys for replacement with other data from content.
+* [`AddMultipleValuesPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/AddMultipleValuesPreprocessor.java) - 
+  allows to add multiple value to some target fields. Value can be constant 
+  or contain pattern with keys for replacement with other data from content.
+* [`AddCurrentTimestampPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/AddCurrentTimestampPreprocessor.java) - 
+  allows to add current timestamp to some target field.
+* [`SimpleValueMapMapperPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/SimpleValueMapMapperPreprocessor.java) - 
+  allows to perform mapping of simple value from source field over configured 
+  Map mapping structure to targed field. Optional default value can be used 
+  for values not found in mapping Map.
+* [`ValuesCollectingPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/ValuesCollectingPreprocessor.java) - 
+  collects values from multiple source fields (some of them can contain lists), 
+  remove duplicities, and store values as List in target field.
+* [`ESLookupValuePreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/ESLookupValuePreprocessor.java) - 
+  uses defined value from data to lookup document in ElasticSearch search index and 
+  put defined fields from it into defined target fields in data.
+* [`MaxTimestampPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/MaxTimestampPreprocessor.java) - 
+  selects max timestamp value from array in source field and store it into target field
+* [`RequiredValidatorPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/RequiredValidatorPreprocessor.java) - 
+  checks defined source field for 'required' condition and throws exception if not match
 
-jar is available over [JBoss maven repository](https://community.jboss.org/docs/DOC-15169), you can use this dependency snippet in your `pom.xml`:
+structured-content-tools jar file is available over [JBoss maven 
+repository](https://community.jboss.org/docs/DOC-15169), you can use this 
+dependency snippet in your `pom.xml`:
 
 	<dependency>
 	  <groupId>org.jboss.elasticsearch</groupId>
 	  <artifactId>structured-content-tools</artifactId>
-	  <version>1.2.1</version>
+	  <version>1.2.2</version>
 	</dependency>
-
