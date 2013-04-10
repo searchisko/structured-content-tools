@@ -41,28 +41,32 @@ import org.elasticsearch.common.settings.SettingsException;
  */
 public class AddMultipleValuesPreprocessor extends StructuredContentPreprocessorBase {
 
-  protected Map<String, Object> fields;
+	protected Map<String, Object> fields;
 
-  @Override
-  public void init(Map<String, Object> settings) throws SettingsException {
-    if (settings == null) {
-      throw new SettingsException("'settings' section is not defined for preprocessor " + name);
-    }
-    fields = settings;
-  }
+	@Override
+	public void init(Map<String, Object> settings) throws SettingsException {
+		if (settings == null) {
+			throw new SettingsException("'settings' section is not defined for preprocessor " + name);
+		}
+		fields = settings;
+	}
 
-  @Override
-  public Map<String, Object> preprocessData(Map<String, Object> data) {
-    if (data == null)
-      return null;
-    for (String key : fields.keySet()) {
-      Object value = fields.get(key);
-      if (value != null && (value instanceof String) && ((String) value).contains("{")) {
-        value = ValueUtils.processStringValuePatternReplacement((String) value, data, null);
-      }
-      StructureUtils.putValueIntoMapOfMaps(data, key, value);
-    }
-    return data;
-  }
+	@Override
+	public Map<String, Object> preprocessData(Map<String, Object> data) {
+		if (data == null)
+			return null;
+		for (String key : fields.keySet()) {
+			Object value = fields.get(key);
+			if (value != null && (value instanceof String) && ((String) value).contains("{")) {
+				value = ValueUtils.processStringValuePatternReplacement((String) value, data, null);
+			}
+			StructureUtils.putValueIntoMapOfMaps(data, key, value);
+		}
+		return data;
+	}
+
+	public Map<String, Object> getFields() {
+		return fields;
+	}
 
 }

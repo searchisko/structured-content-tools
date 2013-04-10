@@ -405,4 +405,32 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 		Map<Object, Map<String, Object>> lookupCache = new HashMap<Object, Map<String, Object>>();
 	}
 
+	public List<String> getSourceBases() {
+		return sourceBases;
+	}
+
+	public String getIndexName() {
+		return indexName;
+	}
+
+	public String getIndexType() {
+		return indexType;
+	}
+
+	public String getSourceField() {
+		return sourceField;
+	}
+
+	public String getSourceValuePattern() {
+		return sourceValuePattern;
+	}
+
+	public String getIdxSearchField() {
+		return idxSearchField;
+	}
+
+	public List<Map<String, String>> getResultMapping() {
+		return resultMapping;
+	}
+
 }

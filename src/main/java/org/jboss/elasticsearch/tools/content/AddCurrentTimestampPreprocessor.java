@@ -36,25 +36,29 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  */
 public class AddCurrentTimestampPreprocessor extends StructuredContentPreprocessorBase {
 
-  protected static final String CFG_FIELD = "field";
+	protected static final String CFG_FIELD = "field";
 
-  protected String field;
+	protected String field;
 
-  @Override
-  public void init(Map<String, Object> settings) throws SettingsException {
-    if (settings == null) {
-      throw new SettingsException("'settings' section is not defined for preprocessor " + name);
-    }
-    field = XContentMapValues.nodeStringValue(settings.get(CFG_FIELD), null);
-    validateConfigurationStringNotEmpty(field, CFG_FIELD);
-  }
+	@Override
+	public void init(Map<String, Object> settings) throws SettingsException {
+		if (settings == null) {
+			throw new SettingsException("'settings' section is not defined for preprocessor " + name);
+		}
+		field = XContentMapValues.nodeStringValue(settings.get(CFG_FIELD), null);
+		validateConfigurationStringNotEmpty(field, CFG_FIELD);
+	}
 
-  @Override
-  public Map<String, Object> preprocessData(Map<String, Object> data) {
-    if (data == null)
-      return null;
-    StructureUtils.putValueIntoMapOfMaps(data, field, ISODateTimeFormat.dateTime().print(System.currentTimeMillis()));
-    return data;
-  }
+	@Override
+	public Map<String, Object> preprocessData(Map<String, Object> data) {
+		if (data == null)
+			return null;
+		StructureUtils.putValueIntoMapOfMaps(data, field, ISODateTimeFormat.dateTime().print(System.currentTimeMillis()));
+		return data;
+	}
+
+	public String getField() {
+		return field;
+	}
 
 }

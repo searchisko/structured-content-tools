@@ -76,4 +76,8 @@ public class RequiredValidatorPreprocessor extends StructuredContentPreprocessor
 		return data;
 	}
 
+	public String getField() {
+		return field;
+	}
+
 }

@@ -43,49 +43,57 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  */
 public class ValuesCollectingPreprocessor extends StructuredContentPreprocessorBase {
 
-  protected static final String CFG_SOURCE_FIELDS = "source_fields";
-  protected static final String CFG_TARGET_FIELD = "target_field";
+	protected static final String CFG_SOURCE_FIELDS = "source_fields";
+	protected static final String CFG_TARGET_FIELD = "target_field";
 
-  protected String fieldTarget;
-  protected List<String> fieldsSource;
+	protected String fieldTarget;
+	protected List<String> fieldsSource;
 
-  @SuppressWarnings("unchecked")
-  @Override
-  public void init(Map<String, Object> settings) throws SettingsException {
-    if (settings == null) {
-      throw new SettingsException("'settings' section is not defined for preprocessor " + name);
-    }
-    fieldsSource = ((List<String>) settings.get(CFG_SOURCE_FIELDS));
-    validateConfigurationObjectNotEmpty(fieldsSource, CFG_SOURCE_FIELDS);
-    fieldTarget = XContentMapValues.nodeStringValue(settings.get(CFG_TARGET_FIELD), null);
-    validateConfigurationStringNotEmpty(fieldTarget, CFG_TARGET_FIELD);
-  }
+	@SuppressWarnings("unchecked")
+	@Override
+	public void init(Map<String, Object> settings) throws SettingsException {
+		if (settings == null) {
+			throw new SettingsException("'settings' section is not defined for preprocessor " + name);
+		}
+		fieldsSource = ((List<String>) settings.get(CFG_SOURCE_FIELDS));
+		validateConfigurationObjectNotEmpty(fieldsSource, CFG_SOURCE_FIELDS);
+		fieldTarget = XContentMapValues.nodeStringValue(settings.get(CFG_TARGET_FIELD), null);
+		validateConfigurationStringNotEmpty(fieldTarget, CFG_TARGET_FIELD);
+	}
 
-  @SuppressWarnings("unchecked")
-  @Override
-  public Map<String, Object> preprocessData(Map<String, Object> data) {
-    if (data == null)
-      return null;
-    Set<Object> vals = new HashSet<Object>();
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> preprocessData(Map<String, Object> data) {
+		if (data == null)
+			return null;
+		Set<Object> vals = new HashSet<Object>();
 
-    for (String sourceField : fieldsSource) {
-      if (ValueUtils.isEmpty(sourceField))
-        continue;
-      Object v = XContentMapValues.extractValue(sourceField, data);
-      if (v != null) {
-        if (v instanceof Collection) {
-          vals.addAll((Collection<Object>) v);
-        } else {
-          vals.add(v);
-        }
-      }
-    }
-    if (vals != null && !vals.isEmpty()) {
-      StructureUtils.putValueIntoMapOfMaps(data, fieldTarget, new ArrayList<Object>(vals));
-    } else {
-      StructureUtils.putValueIntoMapOfMaps(data, fieldTarget, null);
-    }
-    return data;
-  }
+		for (String sourceField : fieldsSource) {
+			if (ValueUtils.isEmpty(sourceField))
+				continue;
+			Object v = XContentMapValues.extractValue(sourceField, data);
+			if (v != null) {
+				if (v instanceof Collection) {
+					vals.addAll((Collection<Object>) v);
+				} else {
+					vals.add(v);
+				}
+			}
+		}
+		if (vals != null && !vals.isEmpty()) {
+			StructureUtils.putValueIntoMapOfMaps(data, fieldTarget, new ArrayList<Object>(vals));
+		} else {
+			StructureUtils.putValueIntoMapOfMaps(data, fieldTarget, null);
+		}
+		return data;
+	}
+
+	public String getFieldTarget() {
+		return fieldTarget;
+	}
+
+	public List<String> getFieldsSource() {
+		return fieldsSource;
+	}
 
 }

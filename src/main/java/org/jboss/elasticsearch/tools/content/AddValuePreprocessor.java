@@ -43,31 +43,39 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  */
 public class AddValuePreprocessor extends StructuredContentPreprocessorBase {
 
-  protected static final String CFG_FIELD = "field";
-  protected static final String CFG_VALUE = "value";
+	protected static final String CFG_FIELD = "field";
+	protected static final String CFG_VALUE = "value";
 
-  protected String field;
-  protected Object value = null;
+	protected String field;
+	protected Object value = null;
 
-  @Override
-  public void init(Map<String, Object> settings) throws SettingsException {
-    if (settings == null) {
-      throw new SettingsException("'settings' section is not defined for preprocessor " + name);
-    }
-    field = XContentMapValues.nodeStringValue(settings.get(CFG_FIELD), null);
-    validateConfigurationStringNotEmpty(field, CFG_FIELD);
-    value = settings.get(CFG_VALUE);
-  }
+	@Override
+	public void init(Map<String, Object> settings) throws SettingsException {
+		if (settings == null) {
+			throw new SettingsException("'settings' section is not defined for preprocessor " + name);
+		}
+		field = XContentMapValues.nodeStringValue(settings.get(CFG_FIELD), null);
+		validateConfigurationStringNotEmpty(field, CFG_FIELD);
+		value = settings.get(CFG_VALUE);
+	}
 
-  @Override
-  public Map<String, Object> preprocessData(Map<String, Object> data) {
-    if (data == null)
-      return null;
-    if (value != null && (value instanceof String) && ((String) value).contains("{")) {
-      value = ValueUtils.processStringValuePatternReplacement((String) value, data, null);
-    }
-    StructureUtils.putValueIntoMapOfMaps(data, field, value);
-    return data;
-  }
+	@Override
+	public Map<String, Object> preprocessData(Map<String, Object> data) {
+		if (data == null)
+			return null;
+		if (value != null && (value instanceof String) && ((String) value).contains("{")) {
+			value = ValueUtils.processStringValuePatternReplacement((String) value, data, null);
+		}
+		StructureUtils.putValueIntoMapOfMaps(data, field, value);
+		return data;
+	}
+
+	public String getField() {
+		return field;
+	}
+
+	public Object getValue() {
+		return value;
+	}
 
 }

@@ -11,9 +11,6 @@ import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.xcontent.support.XContentMapValues;
-import org.jboss.elasticsearch.tools.content.StructureUtils;
-import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorBase;
-import org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory;
 
 /**
  * Content preprocessor which finds maximal timestamp in defined source field and store it to some target field. Example
@@ -115,4 +112,13 @@ public class MaxTimestampPreprocessor extends StructuredContentPreprocessorBase 
 		StructureUtils.putValueIntoMapOfMaps(data, fieldTarget, maxTimestamp);
 		return data;
 	}
+
+	public String getFieldTarget() {
+		return fieldTarget;
+	}
+
+	public String getFieldSource() {
+		return fieldSource;
+	}
+
 }
