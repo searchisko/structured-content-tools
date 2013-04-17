@@ -3,9 +3,12 @@ structured-content-tools
 
 This framework contains tools useful to process/manipulate structured content 
 represented in Java as [`Map of Maps` structure](http://wiki.fasterxml.com/JacksonInFiveMinutes#A.22Raw.22_Data_Binding_Example). 
-We use it to allow highly configurable manipulation with content before store 
+This structure is used often to represent variable JSON data. 
+
+We use this framework to allow highly configurable manipulation with content before store 
 into ElasticSearch search index, for example in [JIRA River Plugin for 
-ElasticSearch](https://github.com/jbossorg/elasticsearch-river-jira) or [DCP platform](https://github.com/jbossorg/dcp-api).
+ElasticSearch](https://github.com/jbossorg/elasticsearch-river-jira) 
+or [DCP platform](https://github.com/jbossorg/dcp-api).
 
 Content manipulation is performed over chain of Preprocessors. Each preprocessor 
 must implement [`org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/StructuredContentPreprocessor.java) 
