@@ -5,9 +5,9 @@ This framework contains tools useful to process/manipulate structured content
 represented in Java as [`Map of Maps` structure](http://wiki.fasterxml.com/JacksonInFiveMinutes#A.22Raw.22_Data_Binding_Example). 
 We use it to allow highly configurable manipulation with content before store 
 into ElasticSearch search index, for example in [JIRA River Plugin for 
-ElasticSearch](https://github.com/jbossorg/elasticsearch-river-jira).
+ElasticSearch](https://github.com/jbossorg/elasticsearch-river-jira) or [DCP platform](https://github.com/jbossorg/dcp-api).
 
-Content manipulation can be done over chain of Preprocessors. Each preprocessor 
+Content manipulation is performed over chain of Preprocessors. Each preprocessor 
 must implement [`org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/StructuredContentPreprocessor.java) 
 interface.
 You can use [`org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorBase`](src/main/java/org/jboss/elasticsearch/tools/content/StructuredContentPreprocessorBase.java) 
@@ -15,11 +15,11 @@ as base class for your preprocessor implementation.
 Chain of preprocessors can be loaded using methods in 
 [`org.jboss.elasticsearch.tools.content.StructuredContentPreprocessorFactory`](src/main/java/org/jboss/elasticsearch/tools/content/StructuredContentPreprocessorFactory.java).
 
-To simplify preprocessors implementation you can use methods from 
+You can use methods from 
 [`org.jboss.elasticsearch.tools.content.ValueUtils`](src/main/java/org/jboss/elasticsearch/tools/content/ValueUtils.java) 
-and [`org.jboss.elasticsearch.tools.content.StructureUtils`](src/main/java/org/jboss/elasticsearch/tools/content/StructureUtils.java).
+and [`org.jboss.elasticsearch.tools.content.StructureUtils`](src/main/java/org/jboss/elasticsearch/tools/content/StructureUtils.java) to simplify preprocessors implementation.
 
-Framework contains some generic configurable preprocessors implementation too:
+Framework contains some generic configurable preprocessors implementation:
 
 * [`AddValuePreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/AddValuePreprocessor.java) - 
   allows to add value to some target field. Value can be constant or contain 
@@ -43,13 +43,15 @@ Framework contains some generic configurable preprocessors implementation too:
   selects max timestamp value from array in source field and store it into target field
 * [`RequiredValidatorPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/RequiredValidatorPreprocessor.java) - 
   checks defined source field for 'required' condition and throws exception if not match
+* [`TrimStringValuePreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/TrimStringValuePreprocessor.java) - 
+  trim String value from source field to the configured maximal length (whitespaces at the beginning and end are removed too) and store it into target field
 
-structured-content-tools jar file is available over [JBoss maven 
+structured-content-tools jar file is available from [JBoss maven 
 repository](https://community.jboss.org/docs/DOC-15169), you can use this 
 dependency snippet in your `pom.xml`:
 
 	<dependency>
 	  <groupId>org.jboss.elasticsearch</groupId>
 	  <artifactId>structured-content-tools</artifactId>
-	  <version>1.2.3</version>
+	  <version>1.2.4</version>
 	</dependency>

@@ -25,9 +25,12 @@ public abstract class StructuredContentPreprocessorBase implements StructuredCon
 	protected String name;
 	protected Client client;
 
+	protected StructuredContentPreprocessorBase() {
+		logger = Loggers.getLogger(getClass(), name);
+	}
+
 	@Override
 	public void init(String name, Client client, Map<String, Object> settings) throws SettingsException {
-		logger = Loggers.getLogger(getClass(), name);
 		this.name = name;
 		this.client = client;
 		init(settings);
@@ -69,6 +72,27 @@ public abstract class StructuredContentPreprocessorBase implements StructuredCon
 				|| ((value instanceof Collection) && ((Collection<Object>) value).isEmpty())) {
 			throw new SettingsException("Missing or empty 'settings/" + configFieldName + "' configuration value for '"
 					+ name + "' preprocessor");
+		}
+	}
+
+	/**
+	 * Read configuration value which is mandatory int.
+	 * 
+	 * @param settings to read value from
+	 * @param configFieldName name of field in preprocessor settings structure to read.
+	 */
+	protected int readMandatoryIntegerConfigValue(Map<String, Object> settings, String configFieldName) {
+		try {
+			Integer mv = StructureUtils.getIntegerValue(settings, configFieldName);
+			if (mv == null) {
+				throw new SettingsException("Missing or empty 'settings/" + configFieldName + "' configuration value for '"
+						+ name + "' preprocessor");
+			} else {
+				return mv;
+			}
+		} catch (NumberFormatException e) {
+			throw new SettingsException("Non integer 'settings/" + configFieldName + "' configuration value for '" + name
+					+ "' preprocessor");
 		}
 	}
 
