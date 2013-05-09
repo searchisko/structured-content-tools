@@ -5,7 +5,10 @@
  */
 package org.jboss.elasticsearch.tools.content;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.Assert;
@@ -142,6 +145,8 @@ public class TrimStringValuePreprocessorTest {
 			settings.put(TrimStringValuePreprocessor.CFG_SOURCE_FIELD, "sf");
 			settings.put(TrimStringValuePreprocessor.CFG_TARGET_FIELD, "tf");
 			settings.put(TrimStringValuePreprocessor.CFG_MAX_SIZE, "10");
+			List<String> sb = new ArrayList<String>();
+			settings.put(TrimStringValuePreprocessor.CFG_source_bases, sb);
 
 			tested.init("Test mapper", client, settings);
 			Assert.assertEquals("Test mapper", tested.getName());
@@ -149,6 +154,7 @@ public class TrimStringValuePreprocessorTest {
 			Assert.assertEquals("sf", tested.getFieldSource());
 			Assert.assertEquals("tf", tested.getFieldTarget());
 			Assert.assertEquals(10, tested.getMaxSize());
+			Assert.assertEquals(sb, tested.getSourceBases());
 		}
 
 		// case - all ok, max_size is Integer
@@ -169,7 +175,7 @@ public class TrimStringValuePreprocessorTest {
 	}
 
 	@Test
-	public void preprocessData() {
+	public void preprocessData_nobases() {
 
 		TrimStringValuePreprocessor tested = new TrimStringValuePreprocessor();
 		tested.fieldSource = "source";
@@ -253,4 +259,54 @@ public class TrimStringValuePreprocessorTest {
 			Assert.assertEquals("Val", XContentMapValues.extractValue(tested.fieldTarget, values));
 		}
 	}
+
+	@Test
+	public void preprocessData_bases() {
+
+		TrimStringValuePreprocessor tested = new TrimStringValuePreprocessor();
+		tested.name = "Test";
+		tested.fieldSource = "source";
+		tested.fieldTarget = "target";
+		tested.maxSize = 3;
+		tested.sourceBases = Arrays.asList(new String[] { "author", "editor", "comments" });
+
+		// case - test it
+		{
+			Map<String, Object> values = new HashMap<String, Object>();
+			values.put("author", createDataStructureMap("aa <b>bb", ""));
+			values.put("editor", createDataStructureMap("ccc <div>dd</div>", null));
+			List<Map<String, Object>> comments = new ArrayList<Map<String, Object>>();
+			values.put("comments", comments);
+
+			Map<String, Object> comment1 = createDataStructureMap("aa bb", "");
+			comments.add(comment1);
+
+			Map<String, Object> comment2 = createDataStructureMap("ccccdd", null);
+			comments.add(comment2);
+
+			tested.preprocessData(values);
+
+			assertDataStructure(values.get("author"), "aa <b>bb", "aa ");
+			assertDataStructure(values.get("editor"), "ccc <div>dd</div>", "ccc");
+
+			Assert.assertEquals(2, comments.size());
+			assertDataStructure(comment1, "aa bb", "aa ");
+			assertDataStructure(comment2, "ccccdd", "ccc");
+		}
+	}
+
+	private Map<String, Object> createDataStructureMap(String source, String target) {
+		Map<String, Object> ret = new HashMap<String, Object>();
+		ret.put("source", source);
+		ret.put("terget", target);
+		return ret;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void assertDataStructure(Object dataObj, String source, String target) {
+		Map<String, Object> data = (Map<String, Object>) dataObj;
+		Assert.assertEquals(source, data.get("source"));
+		Assert.assertEquals(target, data.get("target"));
+	}
+
 }

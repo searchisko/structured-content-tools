@@ -5,6 +5,8 @@
  */
 package org.jboss.elasticsearch.tools.content;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.common.settings.SettingsException;
@@ -34,6 +36,9 @@ import org.jsoup.nodes.Document;
  * {@link XContentMapValues#extractValue(String, Map)}).
  * <li><code>target_field</code> - target field in data to store mapped value into. Can be same as input field. Dot
  * notation can be used here for structure nesting.
+ * <li><code>source_bases</code> - list of fields in source data which are used as bases for stripping. If defined then
+ * stripping is performed for each of this fields, <code>source_field</code> and <code>target_field</code> are resolved
+ * relatively against this base. Base must provide object or list of objects.
  * </ul>
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
@@ -43,10 +48,13 @@ public class StripHtmlPreprocessor extends StructuredContentPreprocessorBase {
 
 	protected static final String CFG_SOURCE_FIELD = "source_field";
 	protected static final String CFG_TARGET_FIELD = "target_field";
+	protected static final String CFG_source_bases = "source_bases";
 
 	protected String fieldSource;
 	protected String fieldTarget;
+	protected List<String> sourceBases;
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void init(Map<String, Object> settings) throws SettingsException {
 		if (settings == null) {
@@ -56,13 +64,41 @@ public class StripHtmlPreprocessor extends StructuredContentPreprocessorBase {
 		validateConfigurationStringNotEmpty(fieldSource, CFG_SOURCE_FIELD);
 		fieldTarget = XContentMapValues.nodeStringValue(settings.get(CFG_TARGET_FIELD), null);
 		validateConfigurationStringNotEmpty(fieldTarget, CFG_TARGET_FIELD);
+		sourceBases = (List<String>) settings.get(CFG_source_bases);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, Object> preprocessData(Map<String, Object> data) {
 		if (data == null)
 			return null;
 
+		if (sourceBases == null) {
+			processOneSourceValue(data);
+		} else {
+			for (String base : sourceBases) {
+				Object obj = XContentMapValues.extractValue(base, data);
+				if (obj != null) {
+					if (obj instanceof Map) {
+						processOneSourceValue((Map<String, Object>) obj);
+					} else if (obj instanceof Collection) {
+						for (Object o : (Collection<Object>) obj) {
+							if (o instanceof Map) {
+								processOneSourceValue((Map<String, Object>) o);
+							} else {
+								logger.warn("Source base {} contains collection with invalid value to be processed {}", base, obj);
+							}
+						}
+					} else {
+						logger.warn("Source base {} contains invalid value to be processed {}", base, obj);
+					}
+				}
+			}
+		}
+		return data;
+	}
+
+	private void processOneSourceValue(Map<String, Object> data) {
 		Object v = null;
 		if (fieldSource.contains(".")) {
 			v = XContentMapValues.extractValue(fieldSource, data);
@@ -79,7 +115,6 @@ public class StripHtmlPreprocessor extends StructuredContentPreprocessorBase {
 				StructureUtils.putValueIntoMapOfMaps(data, fieldTarget, value);
 			}
 		}
-		return data;
 	}
 
 	protected String stripHtml(String value) {
@@ -97,4 +132,7 @@ public class StripHtmlPreprocessor extends StructuredContentPreprocessorBase {
 		return fieldTarget;
 	}
 
+	public List<String> getSourceBases() {
+		return sourceBases;
+	}
 }

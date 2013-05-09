@@ -5,7 +5,10 @@
  */
 package org.jboss.elasticsearch.tools.content;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.Assert;
@@ -90,18 +93,21 @@ public class StripHtmlPreprocessorTest {
 			Map<String, Object> settings = new HashMap<String, Object>();
 			settings.put(StripHtmlPreprocessor.CFG_SOURCE_FIELD, "sf");
 			settings.put(StripHtmlPreprocessor.CFG_TARGET_FIELD, "tf");
+			List<String> sb = new ArrayList<String>();
+			settings.put(TrimStringValuePreprocessor.CFG_source_bases, sb);
 
 			tested.init("Test mapper", client, settings);
 			Assert.assertEquals("Test mapper", tested.getName());
 			Assert.assertEquals(client, tested.client);
 			Assert.assertEquals("sf", tested.getFieldSource());
 			Assert.assertEquals("tf", tested.getFieldTarget());
+			Assert.assertEquals(sb, tested.getSourceBases());
 		}
 
 	}
 
 	@Test
-	public void preprocessData() {
+	public void preprocessData_nobases() {
 
 		StripHtmlPreprocessor tested = new StripHtmlPreprocessor();
 		tested.name = "Test";
@@ -167,6 +173,53 @@ public class StripHtmlPreprocessorTest {
 			Assert.assertEquals("aabb cdgh < text in div & then invalid paragraph test\npre &",
 					(String) values2.get("target"));
 		}
+	}
 
+	@Test
+	public void preprocessData_bases() {
+
+		StripHtmlPreprocessor tested = new StripHtmlPreprocessor();
+		tested.name = "Test";
+		tested.fieldSource = "source";
+		tested.fieldTarget = "target";
+		tested.sourceBases = Arrays.asList(new String[] { "author", "editor", "comments" });
+
+		// case - test it
+		{
+			Map<String, Object> values = new HashMap<String, Object>();
+			values.put("author", createDataStructureMap("aa <b>bb", ""));
+			values.put("editor", createDataStructureMap("cc <div>dd</div>", null));
+			List<Map<String, Object>> comments = new ArrayList<Map<String, Object>>();
+			values.put("comments", comments);
+
+			Map<String, Object> comment1 = createDataStructureMap("aa <b>bb", "");
+			comments.add(comment1);
+
+			Map<String, Object> comment2 = createDataStructureMap("cc <div>dd</div>", null);
+			comments.add(comment2);
+
+			tested.preprocessData(values);
+
+			assertDataStructure(values.get("author"), "aa <b>bb", "aa bb");
+			assertDataStructure(values.get("editor"), "cc <div>dd</div>", "cc dd");
+
+			Assert.assertEquals(2, comments.size());
+			assertDataStructure(comment1, "aa <b>bb", "aa bb");
+			assertDataStructure(comment2, "cc <div>dd</div>", "cc dd");
+		}
+	}
+
+	private Map<String, Object> createDataStructureMap(String source, String target) {
+		Map<String, Object> ret = new HashMap<String, Object>();
+		ret.put("source", source);
+		ret.put("terget", target);
+		return ret;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void assertDataStructure(Object dataObj, String source, String target) {
+		Map<String, Object> data = (Map<String, Object>) dataObj;
+		Assert.assertEquals(source, data.get("source"));
+		Assert.assertEquals(target, data.get("target"));
 	}
 }
