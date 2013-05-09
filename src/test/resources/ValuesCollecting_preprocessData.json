@@ -1,4 +1,4 @@
  {
    "target_field"  : "target",
-   "source_fields" : ["source_simple","source_duplicit","source_unknown","source_nested.value1","source_nested.value_unknown","source_nested.list1","source_nested.list2.value"]
+   "source_fields" : ["source_simple","source_duplicit","source_unknown","source_nested.value1","source_nested.value_unknown","source_nested.list1","source_nested.list2.value","comments.authors.id"]
  } 

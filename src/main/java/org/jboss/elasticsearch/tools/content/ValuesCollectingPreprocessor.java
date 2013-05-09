@@ -61,7 +61,6 @@ public class ValuesCollectingPreprocessor extends StructuredContentPreprocessorB
 		validateConfigurationStringNotEmpty(fieldTarget, CFG_TARGET_FIELD);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, Object> preprocessData(Map<String, Object> data) {
 		if (data == null)
@@ -72,13 +71,7 @@ public class ValuesCollectingPreprocessor extends StructuredContentPreprocessorB
 			if (ValueUtils.isEmpty(sourceField))
 				continue;
 			Object v = XContentMapValues.extractValue(sourceField, data);
-			if (v != null) {
-				if (v instanceof Collection) {
-					vals.addAll((Collection<Object>) v);
-				} else {
-					vals.add(v);
-				}
-			}
+			collectValue(vals, v);
 		}
 		if (vals != null && !vals.isEmpty()) {
 			StructureUtils.putValueIntoMapOfMaps(data, fieldTarget, new ArrayList<Object>(vals));
@@ -86,6 +79,18 @@ public class ValuesCollectingPreprocessor extends StructuredContentPreprocessorB
 			StructureUtils.putValueIntoMapOfMaps(data, fieldTarget, null);
 		}
 		return data;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void collectValue(Set<Object> values, Object value) {
+		if (value != null) {
+			if (value instanceof Collection) {
+				for (Object o : ((Collection<Object>) value))
+					collectValue(values, o);
+			} else {
+				values.add(value);
+			}
+		}
 	}
 
 	public String getFieldTarget() {
