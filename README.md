@@ -48,6 +48,8 @@ Framework contains some generic configurable preprocessors implementation:
   checks defined source field for 'required' condition and throws exception if not match
 * [`TrimStringValuePreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/TrimStringValuePreprocessor.java) - 
   trim String value from source field to the configured maximal length (whitespaces at the beginning and end are removed too) and store it into target field
+* [`StripHtmlPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/StripHtmlPreprocessor.java) - 
+  strip HTML tags and unescape HTML entities from String value of source field and store it into target field
 
 structured-content-tools jar file is available from [JBoss maven 
 repository](https://community.jboss.org/docs/DOC-15169), you can use this 
@@ -56,5 +58,5 @@ dependency snippet in your `pom.xml`:
 	<dependency>
 	  <groupId>org.jboss.elasticsearch</groupId>
 	  <artifactId>structured-content-tools</artifactId>
-	  <version>1.2.4</version>
+	  <version>1.2.5</version>
 	</dependency>

@@ -136,7 +136,7 @@ public class TrimStringValuePreprocessorTest {
 		TrimStringValuePreprocessor tested = new TrimStringValuePreprocessor();
 		Client client = null;
 
-		// case - all ok, mas_size is String
+		// case - all ok, max_size is String
 		{
 			Map<String, Object> settings = new HashMap<String, Object>();
 			settings.put(TrimStringValuePreprocessor.CFG_SOURCE_FIELD, "sf");
@@ -151,7 +151,7 @@ public class TrimStringValuePreprocessorTest {
 			Assert.assertEquals(10, tested.getMaxSize());
 		}
 
-		// case - all ok, mas_size is Integer
+		// case - all ok, max_size is Integer
 		{
 			Map<String, Object> settings = new HashMap<String, Object>();
 			settings.put(TrimStringValuePreprocessor.CFG_SOURCE_FIELD, "sf");
