@@ -58,5 +58,5 @@ dependency snippet in your `pom.xml`:
 	<dependency>
 	  <groupId>org.jboss.elasticsearch</groupId>
 	  <artifactId>structured-content-tools</artifactId>
-	  <version>1.2.8</version>
+	  <version>1.3.0</version>
 	</dependency>

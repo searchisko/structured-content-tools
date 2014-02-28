@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.settings.SettingsException;
@@ -348,7 +348,7 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 			try {
 				SearchRequestBuilder req = client.prepareSearch(indexName).setTypes(indexType)
 						.setQuery(QueryBuilders.matchAllQuery())
-						.setFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(idxSearchField, sourceValue)));
+						.setPostFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(idxSearchField, sourceValue)));
 				for (Map<String, String> mappingRecord : resultMapping) {
 					req.addField(mappingRecord.get(CFG_idx_result_field));
 				}
@@ -373,7 +373,7 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 				}
 
 				esExceptionWarned = false;
-			} catch (ElasticSearchException e) {
+			} catch (ElasticsearchException e) {
 				if (!esExceptionWarned) {
 					esExceptionWarned = true;
 					logger.warn("ElasticSearch lookup failed due '{}:{}' so default value is used for field instead", e
