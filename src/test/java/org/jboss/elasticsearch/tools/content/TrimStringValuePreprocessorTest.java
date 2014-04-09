@@ -224,12 +224,22 @@ public class TrimStringValuePreprocessorTest {
 			Assert.assertEquals("aabbc", values.get(tested.fieldTarget));
 		}
 
+		tested.maxSize = 2;
+		// case - shorten short value
+		{
+			Map<String, Object> values = new HashMap<String, Object>();
+			values.put(tested.fieldSource, "abc");
+			tested.preprocessData(values);
+			Assert.assertEquals("ab", values.get(tested.fieldTarget));
+		}
+
+		tested.maxSize = 5;
 		// case - shorten value
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, "abcdef");
 			tested.preprocessData(values);
-			Assert.assertEquals("abcde", values.get(tested.fieldTarget));
+			Assert.assertEquals("ab...", values.get(tested.fieldTarget));
 		}
 
 		// case - trim value whitespaces, do not shorten it
@@ -241,11 +251,12 @@ public class TrimStringValuePreprocessorTest {
 		}
 
 		// case - trim value whitespaces and shorten it
+		tested.maxSize = 8;
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, " too long value  ");
 			tested.preprocessData(values);
-			Assert.assertEquals("too l", values.get(tested.fieldTarget));
+			Assert.assertEquals("too l...", values.get(tested.fieldTarget));
 		}
 
 		// case - dot notation

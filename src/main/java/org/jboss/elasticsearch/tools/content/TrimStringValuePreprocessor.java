@@ -5,8 +5,6 @@
  */
 package org.jboss.elasticsearch.tools.content;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.common.settings.SettingsException;
@@ -44,65 +42,28 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  * @author Vlastimil Elias (velias at redhat dot com)
  * @see StructuredContentPreprocessorFactory
  */
-public class TrimStringValuePreprocessor extends StructuredContentPreprocessorBase {
+public class TrimStringValuePreprocessor extends StructuredContentPreprocessorWithSourceBasesBase<Object> {
 
 	protected static final String CFG_SOURCE_FIELD = "source_field";
 	protected static final String CFG_TARGET_FIELD = "target_field";
 	protected static final String CFG_MAX_SIZE = "max_size";
-	protected static final String CFG_source_bases = "source_bases";
 
 	protected String fieldSource;
 	protected String fieldTarget;
 	protected int maxSize;
-	protected List<String> sourceBases;
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void init(Map<String, Object> settings) throws SettingsException {
-		if (settings == null) {
-			throw new SettingsException("'settings' section is not defined for preprocessor " + name);
-		}
+		super.init(settings);
 		fieldSource = XContentMapValues.nodeStringValue(settings.get(CFG_SOURCE_FIELD), null);
 		validateConfigurationStringNotEmpty(fieldSource, CFG_SOURCE_FIELD);
 		fieldTarget = XContentMapValues.nodeStringValue(settings.get(CFG_TARGET_FIELD), null);
 		validateConfigurationStringNotEmpty(fieldTarget, CFG_TARGET_FIELD);
 		maxSize = readMandatoryIntegerConfigValue(settings, CFG_MAX_SIZE);
-		sourceBases = (List<String>) settings.get(CFG_source_bases);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, Object> preprocessData(Map<String, Object> data) {
-		if (data == null)
-			return null;
-
-		if (sourceBases == null) {
-			processOneSourceValue(data);
-		} else {
-			for (String base : sourceBases) {
-				Object obj = XContentMapValues.extractValue(base, data);
-				if (obj != null) {
-					if (obj instanceof Map) {
-						processOneSourceValue((Map<String, Object>) obj);
-					} else if (obj instanceof Collection) {
-						for (Object o : (Collection<Object>) obj) {
-							if (o instanceof Map) {
-								processOneSourceValue((Map<String, Object>) o);
-							} else {
-								logger.warn("Source base {} contains collection with invalid value to be processed {}", base, obj);
-							}
-						}
-					} else {
-						logger.warn("Source base {} contains invalid value to be processed {}", base, obj);
-					}
-				}
-			}
-		}
-
-		return data;
-	}
-
-	private void processOneSourceValue(Map<String, Object> data) {
+	protected void processOneSourceValue(Map<String, Object> data, Object context) {
 		Object v = null;
 		if (fieldSource.contains(".")) {
 			v = XContentMapValues.extractValue(fieldSource, data);
@@ -117,7 +78,11 @@ public class TrimStringValuePreprocessor extends StructuredContentPreprocessorBa
 			} else {
 				String origValue = v.toString().trim();
 				if (origValue.length() > maxSize) {
-					origValue = origValue.substring(0, maxSize);
+					if (maxSize > 4) {
+						origValue = origValue.substring(0, maxSize - 3) + "...";
+					} else {
+						origValue = origValue.substring(0, maxSize);
+					}
 				}
 				putTargetValue(data, origValue);
 			}
@@ -126,6 +91,11 @@ public class TrimStringValuePreprocessor extends StructuredContentPreprocessorBa
 
 	protected void putTargetValue(Map<String, Object> data, String value) {
 		StructureUtils.putValueIntoMapOfMaps(data, fieldTarget, value);
+	}
+
+	@Override
+	protected Object createContext() {
+		return null;
 	}
 
 	public String getFieldSource() {
@@ -138,10 +108,6 @@ public class TrimStringValuePreprocessor extends StructuredContentPreprocessorBa
 
 	public int getMaxSize() {
 		return maxSize;
-	}
-
-	public List<String> getSourceBases() {
-		return sourceBases;
 	}
 
 }
