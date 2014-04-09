@@ -13,6 +13,12 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.xcontent.support.XContentMapValues;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
+import org.jsoup.safety.Whitelist;
+import org.jsoup.select.NodeTraversor;
+import org.jsoup.select.NodeVisitor;
 
 /**
  * Content preprocessor which takes String value from source field, strip html tags from it, unescape html entities (
@@ -120,8 +126,36 @@ public class StripHtmlPreprocessor extends StructuredContentPreprocessorBase {
 	protected String stripHtml(String value) {
 		if (value == null || value.trim().isEmpty())
 			return value;
-		Document doc = Jsoup.parse(value);
-		return doc.text();
+		Document doc = Jsoup.parse(Jsoup.clean(value, Whitelist.relaxed()));
+		return convertNodeToText(doc.body());
+	}
+
+	protected String convertNodeToText(Element element) {
+		if (element == null) return "";
+		final StringBuilder buffer = new StringBuilder();
+		new NodeTraversor(new NodeVisitor() {
+			@Override
+			public void head(Node node, int depth) {
+				if (node instanceof TextNode) {
+					TextNode textNode = (TextNode) node;
+					String text = textNode.text().replace('\u00A0', ' ').trim(); // non breaking space
+					if(!text.isEmpty())
+					{
+						buffer.append(text);
+						if (!text.endsWith(" ")) {
+							buffer.append(" "); // the last text gets appended the extra space too but we remove it later
+						}
+					}
+				}
+			}
+			@Override
+			public void tail(Node node, int depth) {}
+		}).traverse(element);
+		String output = buffer.toString();
+		if (output.endsWith(" ")) { // removal of the last extra space
+			output = output.substring(0, output.length() - 1);
+		}
+		return output;
 	}
 
 	public String getFieldSource() {

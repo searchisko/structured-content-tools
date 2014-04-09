@@ -155,7 +155,7 @@ public class StripHtmlPreprocessorTest {
 					.put(tested.fieldSource,
 							"<b>aa<b>bb<br>cdgh &lt;<div>text in div</div>\n &amp; then\n invalid <p> paragraph <pre>test\npre &amp;</pre>");
 			tested.preprocessData(values);
-			Assert.assertEquals("aabb cdgh < text in div & then invalid paragraph test\npre &",
+			Assert.assertEquals("aa bb cdgh < text in div & then invalid paragraph test pre &",
 					(String) values.get(tested.fieldTarget));
 		}
 
@@ -170,7 +170,7 @@ public class StripHtmlPreprocessorTest {
 					.put("source",
 							"<b>aa<b>bb<br>cdgh &lt;<div>text in div</div>\n &amp; then\n invalid <p> paragraph <pre>test\npre &amp;</pre>");
 			tested.preprocessData(values);
-			Assert.assertEquals("aabb cdgh < text in div & then invalid paragraph test\npre &",
+			Assert.assertEquals("aa bb cdgh < text in div & then invalid paragraph test pre &",
 					(String) values2.get("target"));
 		}
 	}
