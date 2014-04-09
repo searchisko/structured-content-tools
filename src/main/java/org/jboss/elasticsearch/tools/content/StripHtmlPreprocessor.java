@@ -5,7 +5,6 @@
  */
 package org.jboss.elasticsearch.tools.content;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -50,61 +49,30 @@ import org.jsoup.select.NodeVisitor;
  * @author Vlastimil Elias (velias at redhat dot com)
  * @see StructuredContentPreprocessorFactory
  */
-public class StripHtmlPreprocessor extends StructuredContentPreprocessorBase {
+public class StripHtmlPreprocessor extends StructuredContentPreprocessorWithSourceBasesBase<Object> {
 
 	protected static final String CFG_SOURCE_FIELD = "source_field";
 	protected static final String CFG_TARGET_FIELD = "target_field";
-	protected static final String CFG_source_bases = "source_bases";
 
 	protected String fieldSource;
 	protected String fieldTarget;
-	protected List<String> sourceBases;
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void init(Map<String, Object> settings) throws SettingsException {
-		if (settings == null) {
-			throw new SettingsException("'settings' section is not defined for preprocessor " + name);
-		}
+		super.init(settings);
 		fieldSource = XContentMapValues.nodeStringValue(settings.get(CFG_SOURCE_FIELD), null);
 		validateConfigurationStringNotEmpty(fieldSource, CFG_SOURCE_FIELD);
 		fieldTarget = XContentMapValues.nodeStringValue(settings.get(CFG_TARGET_FIELD), null);
 		validateConfigurationStringNotEmpty(fieldTarget, CFG_TARGET_FIELD);
-		sourceBases = (List<String>) settings.get(CFG_source_bases);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, Object> preprocessData(Map<String, Object> data) {
-		if (data == null)
-			return null;
-
-		if (sourceBases == null) {
-			processOneSourceValue(data);
-		} else {
-			for (String base : sourceBases) {
-				Object obj = XContentMapValues.extractValue(base, data);
-				if (obj != null) {
-					if (obj instanceof Map) {
-						processOneSourceValue((Map<String, Object>) obj);
-					} else if (obj instanceof Collection) {
-						for (Object o : (Collection<Object>) obj) {
-							if (o instanceof Map) {
-								processOneSourceValue((Map<String, Object>) o);
-							} else {
-								logger.warn("Source base {} contains collection with invalid value to be processed {}", base, obj);
-							}
-						}
-					} else {
-						logger.warn("Source base {} contains invalid value to be processed {}", base, obj);
-					}
-				}
-			}
-		}
-		return data;
+	protected Object createContext() {
+		return null;
 	}
 
-	private void processOneSourceValue(Map<String, Object> data) {
+	@Override
+	protected void processOneSourceValue(Map<String, Object> data, Object context) {
 		Object v = null;
 		if (fieldSource.contains(".")) {
 			v = XContentMapValues.extractValue(fieldSource, data);
@@ -131,7 +99,8 @@ public class StripHtmlPreprocessor extends StructuredContentPreprocessorBase {
 	}
 
 	protected String convertNodeToText(Element element) {
-		if (element == null) return "";
+		if (element == null)
+			return "";
 		final StringBuilder buffer = new StringBuilder();
 		new NodeTraversor(new NodeVisitor() {
 			@Override
@@ -139,8 +108,7 @@ public class StripHtmlPreprocessor extends StructuredContentPreprocessorBase {
 				if (node instanceof TextNode) {
 					TextNode textNode = (TextNode) node;
 					String text = textNode.text().replace('\u00A0', ' ').trim(); // non breaking space
-					if(!text.isEmpty())
-					{
+					if (!text.isEmpty()) {
 						buffer.append(text);
 						if (!text.endsWith(" ")) {
 							buffer.append(" "); // the last text gets appended the extra space too but we remove it later
@@ -148,8 +116,10 @@ public class StripHtmlPreprocessor extends StructuredContentPreprocessorBase {
 					}
 				}
 			}
+
 			@Override
-			public void tail(Node node, int depth) {}
+			public void tail(Node node, int depth) {
+			}
 		}).traverse(element);
 		String output = buffer.toString();
 		if (output.endsWith(" ")) { // removal of the last extra space
@@ -169,4 +139,5 @@ public class StripHtmlPreprocessor extends StructuredContentPreprocessorBase {
 	public List<String> getSourceBases() {
 		return sourceBases;
 	}
+
 }

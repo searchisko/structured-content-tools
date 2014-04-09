@@ -181,7 +181,8 @@ import org.elasticsearch.search.SearchHit;
  * @author Vlastimil Elias (velias at redhat dot com)
  * @see StructuredContentPreprocessorFactory
  */
-public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase {
+public class ESLookupValuePreprocessor extends
+		StructuredContentPreprocessorWithSourceBasesBase<ESLookupValuePreprocessor.LookupContenxt> {
 
 	protected static final String CFG_index_name = "index_name";
 	protected static final String CFG_index_type = "index_type";
@@ -192,9 +193,6 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 	protected static final String CFG_idx_result_field = "idx_result_field";
 	protected static final String CFG_target_field = "target_field";
 	protected static final String CFG_value_default = "value_default";
-	protected static final String CFG_source_bases = "source_bases";
-
-	protected List<String> sourceBases;
 
 	protected String indexName;
 	protected String indexType;
@@ -206,12 +204,11 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 	@SuppressWarnings("unchecked")
 	@Override
 	public void init(Map<String, Object> settings) throws SettingsException {
+		super.init(settings);
 		if (client == null) {
 			throw new SettingsException("ElasticSearch client is required for preprocessor " + name);
 		}
-		if (settings == null) {
-			throw new SettingsException("'settings' section is not defined for preprocessor " + name);
-		}
+
 		indexName = XContentMapValues.nodeStringValue(settings.get(CFG_index_name), null);
 		validateConfigurationStringNotEmpty(indexName, CFG_index_name);
 		indexType = XContentMapValues.nodeStringValue(settings.get(CFG_index_type), null);
@@ -229,7 +226,6 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 		validateResultMappingConfiguration(resultMapping, CFG_result_mapping);
 		idxSearchField = XContentMapValues.nodeStringValue(settings.get(CFG_idx_search_field), null);
 		validateConfigurationStringNotEmpty(idxSearchField, CFG_idx_search_field);
-		sourceBases = (List<String>) settings.get(CFG_source_bases);
 	}
 
 	/**
@@ -257,40 +253,14 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, Object> preprocessData(Map<String, Object> data) {
-		if (data == null)
-			return null;
-
-		if (sourceBases == null) {
-			processOneSourceValue(data, null);
-		} else {
-			LookupContenxt context = new LookupContenxt();
-			for (String base : sourceBases) {
-				Object obj = XContentMapValues.extractValue(base, data);
-				if (obj != null) {
-					if (obj instanceof Map) {
-						processOneSourceValue((Map<String, Object>) obj, context);
-					} else if (obj instanceof Collection) {
-						for (Object o : (Collection<Object>) obj) {
-							if (o instanceof Map) {
-								processOneSourceValue((Map<String, Object>) o, context);
-							} else {
-								logger.warn("Source base {} contains collection with invalid value to be processed {}", base, obj);
-							}
-						}
-					} else {
-						logger.warn("Source base {} contains invalid value to be processed {}", base, obj);
-					}
-				}
-			}
-		}
-		return data;
+	protected LookupContenxt createContext() {
+		return new LookupContenxt();
 	}
 
 	@SuppressWarnings("unchecked")
-	private void processOneSourceValue(Map<String, Object> data, LookupContenxt context) {
+	@Override
+	protected void processOneSourceValue(Map<String, Object> data, LookupContenxt context) {
 		Object sourceValue = null;
 		if (sourceField != null) {
 			sourceValue = XContentMapValues.extractValue(sourceField, data);
@@ -401,7 +371,7 @@ public class ESLookupValuePreprocessor extends StructuredContentPreprocessorBase
 		}
 	}
 
-	private class LookupContenxt {
+	protected class LookupContenxt {
 		Map<Object, Map<String, Object>> lookupCache = new HashMap<Object, Map<String, Object>>();
 	}
 
