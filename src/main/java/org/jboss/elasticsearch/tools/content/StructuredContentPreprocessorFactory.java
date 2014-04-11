@@ -36,7 +36,11 @@ import org.elasticsearch.client.Client;
  */
 public class StructuredContentPreprocessorFactory {
 
-  /**
+  public static final String CFG_SETTINGS = "settings";
+	public static final String CFG_CLASS = "class";
+	public static final String CFG_NAME = "name";
+
+	/**
    * Create preprocessor from configuration described in this class's javadoc.
    * 
    * @param preprocessorConfig configuration structure in Map of Maps
@@ -47,15 +51,15 @@ public class StructuredContentPreprocessorFactory {
   @SuppressWarnings("unchecked")
   public static StructuredContentPreprocessor createPreprocessor(Map<String, Object> preprocessorConfig, Client client)
       throws IllegalArgumentException {
-    String name = StructureUtils.getStringValue(preprocessorConfig, "name");
+    String name = StructureUtils.getStringValue(preprocessorConfig, CFG_NAME);
     if (ValueUtils.isEmpty(name)) {
       throw new IllegalArgumentException("'name' element not defined");
     }
-    String className = StructureUtils.getStringValue(preprocessorConfig, "class");
+    String className = StructureUtils.getStringValue(preprocessorConfig, CFG_CLASS);
     if (ValueUtils.isEmpty(className)) {
       throw new IllegalArgumentException("'class' element not defined for preprocessor " + name);
     }
-    Object settings = preprocessorConfig.get("settings");
+    Object settings = preprocessorConfig.get(CFG_SETTINGS);
     if (settings != null && !(settings instanceof Map)) {
       throw new IllegalArgumentException("'settings' element must be Map for preprocessor " + name);
     }

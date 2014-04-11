@@ -1,3 +1,8 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
+ * as indicated by the @authors tag. All rights reserved.
+ */
 package org.jboss.elasticsearch.tools.content;
 
 import java.util.Collection;
@@ -8,7 +13,8 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.elasticsearch.common.xcontent.support.XContentMapValues;
 
 /**
- * Abstract base class for preprocessors supporting concept of "source_bases".
+ * Abstract base class for preprocessors supporting concept of "source_bases". Do not forgot to call parent
+ * {@link #init(Map)} from your subclass init method if you override it!
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */
@@ -34,24 +40,25 @@ public abstract class StructuredContentPreprocessorWithSourceBasesBase<T> extend
 			return null;
 
 		if (sourceBases == null) {
-			processOneSourceValue(data, null);
+			processOneSourceValue(data, null, null);
 		} else {
 			T context = createContext();
 			for (String base : sourceBases) {
 				Object obj = XContentMapValues.extractValue(base, data);
 				if (obj != null) {
 					if (obj instanceof Map) {
-						processOneSourceValue((Map<String, Object>) obj, context);
+						processOneSourceValue((Map<String, Object>) obj, context, base);
 					} else if (obj instanceof Collection) {
 						for (Object o : (Collection<Object>) obj) {
 							if (o instanceof Map) {
-								processOneSourceValue((Map<String, Object>) o, context);
+								processOneSourceValue((Map<String, Object>) o, context, base);
 							} else {
-								logger.warn("Source base {} contains collection with invalid value to be processed {}", base, obj);
+								logger.warn("Source base {} contains collection with invalid value to be processed {}, so skipped",
+										base, obj);
 							}
 						}
 					} else {
-						logger.warn("Source base {} contains invalid value to be processed {}", base, obj);
+						logger.warn("Source base {} contains invalid value to be processed {}, so skipped", base, obj);
 					}
 				}
 			}
@@ -65,8 +72,10 @@ public abstract class StructuredContentPreprocessorWithSourceBasesBase<T> extend
 	 * 
 	 * @param data to run preprocessing on.
 	 * @param context from {@link #createContext()}
+	 * @param base processing is called for. Can be null if not called for base. It is just for use in warning messages
+	 *          etc (for example {@link #getFullFieldName(String, String)}).
 	 */
-	protected abstract void processOneSourceValue(Map<String, Object> data, T context);
+	protected abstract void processOneSourceValue(Map<String, Object> data, T context, String base);
 
 	/**
 	 * Create shared context object passed to each call of {@link #preprocessData(Map)} if "source_bases" concept is used.
@@ -75,6 +84,21 @@ public abstract class StructuredContentPreprocessorWithSourceBasesBase<T> extend
 	 * @return context object or null
 	 */
 	protected abstract T createContext();
+
+	/**
+	 * Get full name of field in respect to base with dot notation.
+	 * 
+	 * @param base field is for, can be null
+	 * @param field we want full name for
+	 * @return full name for field
+	 */
+	protected static String getFullFieldName(String base, String field) {
+		if (base != null) {
+			return base + "." + field;
+		} else {
+			return field;
+		}
+	}
 
 	/**
 	 * Get configured source bases

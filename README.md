@@ -29,7 +29,8 @@ Framework contains some generic configurable preprocessors implementation:
   pattern with keys for replacement with other data from content.
 * [`AddMultipleValuesPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/AddMultipleValuesPreprocessor.java) - 
   allows to add multiple value to some target fields. Value can be constant 
-  or contain pattern with keys for replacement with other data from content.
+* [`RemoveMultipleFieldsPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/RemoveMultipleFieldsPreprocessor.java) - 
+  allows to remove one or more fields from data structure.
 * [`AddCurrentTimestampPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/AddCurrentTimestampPreprocessor.java) - 
   allows to add current timestamp to some target field.
 * [`SimpleValueMapMapperPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/SimpleValueMapMapperPreprocessor.java) - 
@@ -53,10 +54,21 @@ Framework contains some generic configurable preprocessors implementation:
 
 structured-content-tools jar file is available from [JBoss maven 
 repository](https://community.jboss.org/docs/DOC-15169), you can use this 
-dependency snippet in your `pom.xml`:
+dependency snippet in your `pom.xml`.
+
+For Elasticsearch 1.0.x series and java 1.7
 
 	<dependency>
 	  <groupId>org.jboss.elasticsearch</groupId>
 	  <artifactId>structured-content-tools</artifactId>
 	  <version>1.3.0</version>
 	</dependency>
+
+For Elasticsearch 0.90.5 series and java 1.6
+
+	<dependency>
+	  <groupId>org.jboss.elasticsearch</groupId>
+	  <artifactId>structured-content-tools</artifactId>
+	  <version>1.2.8</version>
+	</dependency>
+	

@@ -260,7 +260,7 @@ public class ESLookupValuePreprocessor extends
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void processOneSourceValue(Map<String, Object> data, LookupContenxt context) {
+	protected void processOneSourceValue(Map<String, Object> data, LookupContenxt context, String base) {
 		Object sourceValue = null;
 		if (sourceField != null) {
 			sourceValue = XContentMapValues.extractValue(sourceField, data);

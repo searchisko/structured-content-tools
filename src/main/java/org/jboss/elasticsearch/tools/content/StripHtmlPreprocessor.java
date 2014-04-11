@@ -72,7 +72,7 @@ public class StripHtmlPreprocessor extends StructuredContentPreprocessorWithSour
 	}
 
 	@Override
-	protected void processOneSourceValue(Map<String, Object> data, Object context) {
+	protected void processOneSourceValue(Map<String, Object> data, Object context, String base) {
 		Object v = null;
 		if (fieldSource.contains(".")) {
 			v = XContentMapValues.extractValue(fieldSource, data);
