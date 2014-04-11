@@ -178,17 +178,18 @@ public class TrimStringValuePreprocessorTest {
 	public void preprocessData_nobases() {
 
 		TrimStringValuePreprocessor tested = new TrimStringValuePreprocessor();
+		tested.name = "mypreproc";
 		tested.fieldSource = "source";
 		tested.fieldTarget = "target";
 		tested.maxSize = 5;
 
 		// case - not NPE
-		tested.preprocessData(null);
+		tested.preprocessData(null, null);
 
 		// case - leave null if no value defined
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertNull(values.get(tested.fieldTarget));
 		}
 
@@ -196,15 +197,24 @@ public class TrimStringValuePreprocessorTest {
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, new Integer(10));
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertNull(values.get(tested.fieldTarget));
+		}
+		{
+			Map<String, Object> values = new HashMap<String, Object>();
+			values.put(tested.fieldSource, new Integer(10));
+
+			PreprocessChainContextImpl context = new PreprocessChainContextImpl();
+			tested.preprocessData(values, context);
+			Assert.assertNull(values.get(tested.fieldTarget));
+			Assert.assertTrue(context.isWarning());
 		}
 
 		// case - leave size if empty
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, "");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("", values.get(tested.fieldTarget));
 		}
 
@@ -212,7 +222,7 @@ public class TrimStringValuePreprocessorTest {
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, "   ");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("", values.get(tested.fieldTarget));
 		}
 
@@ -220,7 +230,7 @@ public class TrimStringValuePreprocessorTest {
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, "aabbc");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("aabbc", values.get(tested.fieldTarget));
 		}
 
@@ -229,7 +239,7 @@ public class TrimStringValuePreprocessorTest {
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, "abc");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("ab", values.get(tested.fieldTarget));
 		}
 
@@ -238,7 +248,7 @@ public class TrimStringValuePreprocessorTest {
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, "abcdef");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("ab...", values.get(tested.fieldTarget));
 		}
 
@@ -246,7 +256,7 @@ public class TrimStringValuePreprocessorTest {
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, " aa  ");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("aa", values.get(tested.fieldTarget));
 		}
 
@@ -255,7 +265,7 @@ public class TrimStringValuePreprocessorTest {
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, " too long value  ");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("too l...", values.get(tested.fieldTarget));
 		}
 
@@ -266,7 +276,7 @@ public class TrimStringValuePreprocessorTest {
 			tested.maxSize = 3;
 			Map<String, Object> values = new HashMap<String, Object>();
 			StructureUtils.putValueIntoMapOfMaps(values, tested.fieldSource, "   Value   ");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("Val", XContentMapValues.extractValue(tested.fieldTarget, values));
 		}
 	}
@@ -295,7 +305,7 @@ public class TrimStringValuePreprocessorTest {
 			Map<String, Object> comment2 = createDataStructureMap("ccccdd", null);
 			comments.add(comment2);
 
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 
 			assertDataStructure(values.get("author"), "aa <b>bb", "aa ");
 			assertDataStructure(values.get("editor"), "ccc <div>dd</div>", "ccc");

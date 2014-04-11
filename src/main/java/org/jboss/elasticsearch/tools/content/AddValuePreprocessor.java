@@ -60,7 +60,7 @@ public class AddValuePreprocessor extends StructuredContentPreprocessorBase {
 	}
 
 	@Override
-	public Map<String, Object> preprocessData(Map<String, Object> data) {
+	public Map<String, Object> preprocessData(Map<String, Object> data, PreprocessChainContext context) {
 		if (data == null)
 			return null;
 		if (value != null && (value instanceof String) && ((String) value).contains("{")) {

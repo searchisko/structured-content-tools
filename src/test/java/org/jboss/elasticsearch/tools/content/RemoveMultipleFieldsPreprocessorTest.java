@@ -117,7 +117,7 @@ public class RemoveMultipleFieldsPreprocessorTest {
 		substructure.put("removeme", "Ahoj2");
 		substructure.put("keepme", "keep me");
 
-		tested.preprocessData(data);
+		tested.preprocessData(data, null);
 
 		Assert.assertEquals(2, data.size());
 		Assert.assertEquals("Keep this value in data", data.get("keepme"));
@@ -158,7 +158,7 @@ public class RemoveMultipleFieldsPreprocessorTest {
 		List<Object> dataInBase2 = new ArrayList<Object>();
 		data.put("base2", dataInBase);
 
-		tested.preprocessData(data);
+		tested.preprocessData(data, null);
 
 		Assert.assertEquals(2, data.size());
 		Assert.assertEquals(2, dataInBase.size());

@@ -50,7 +50,7 @@ public class AddCurrentTimestampPreprocessor extends StructuredContentPreprocess
 	}
 
 	@Override
-	public Map<String, Object> preprocessData(Map<String, Object> data) {
+	public Map<String, Object> preprocessData(Map<String, Object> data, PreprocessChainContext context) {
 		if (data == null)
 			return null;
 		StructureUtils.putValueIntoMapOfMaps(data, field, ISODateTimeFormat.dateTime().print(System.currentTimeMillis()));

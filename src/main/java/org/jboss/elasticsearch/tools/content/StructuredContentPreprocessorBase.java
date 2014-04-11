@@ -44,6 +44,28 @@ public abstract class StructuredContentPreprocessorBase implements StructuredCon
 	 */
 	public abstract void init(Map<String, Object> settings) throws SettingsException;
 
+	@Override
+	public Map<String, Object> preprocessData(Map<String, Object> data) {
+		return preprocessData(data, null);
+	}
+
+	/**
+	 * Write warning message into processing chain context if available.
+	 * 
+	 * @param chainContext to write warning into. Can be <code>null</code>.
+	 * @param warningMessage message with warning description. It is a good idea to write name of data field with problem
+	 *          in this message to be clear where problem is.
+	 * @see PreprocessChainContext#addDataWarning(String, String)
+	 */
+	protected void addDataWarning(PreprocessChainContext chainContext, String warningMessage) {
+		if (warningMessage == null) {
+			throw new IllegalArgumentException("warningMessage must be provided");
+		}
+		if (chainContext != null) {
+			chainContext.addDataWarning(name, warningMessage);
+		}
+	}
+
 	/**
 	 * Validate configuration string is not null or empty. Useful for your {@link #init(Map)} implementation.
 	 * 

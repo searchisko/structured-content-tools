@@ -260,7 +260,8 @@ public class ESLookupValuePreprocessor extends
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void processOneSourceValue(Map<String, Object> data, LookupContenxt context, String base) {
+	protected void processOneSourceValue(Map<String, Object> data, LookupContenxt context, String base,
+			PreprocessChainContext chainContext) {
 		Object sourceValue = null;
 		if (sourceField != null) {
 			sourceValue = XContentMapValues.extractValue(sourceField, data);
@@ -274,7 +275,7 @@ public class ESLookupValuePreprocessor extends
 			Collection<Object> sourceCollection = (Collection<Object>) sourceValue;
 			targetValues = new HashMap<String, Object>();
 			for (Object sourceObject : sourceCollection) {
-				Map<String, Object> v = lookupValue(sourceObject, data, context);
+				Map<String, Object> v = lookupValue(sourceObject, data, context, chainContext);
 				if (v != null) {
 					for (String targetField : v.keySet()) {
 						Object vo = v.get(targetField);
@@ -290,7 +291,7 @@ public class ESLookupValuePreprocessor extends
 				}
 			}
 		} else {
-			targetValues = lookupValue(sourceValue, data, context);
+			targetValues = lookupValue(sourceValue, data, context, chainContext);
 		}
 		if (targetValues != null) {
 			for (String targetField : targetValues.keySet())
@@ -305,9 +306,12 @@ public class ESLookupValuePreprocessor extends
 	 * 
 	 * @param sourceValue to be looked up
 	 * @param data used in default pattern evaluation
+	 * @param context
+	 * @param chainContext
 	 * @return Map with looked up values (defaults handled already) and target_field names as keys
 	 */
-	protected Map<String, Object> lookupValue(Object sourceValue, Map<String, Object> data, LookupContenxt context) {
+	protected Map<String, Object> lookupValue(Object sourceValue, Map<String, Object> data, LookupContenxt context,
+			PreprocessChainContext chainContext) {
 		Map<String, Object> value = new HashMap<String, Object>();
 
 		if (sourceValue != null) {
@@ -327,7 +331,9 @@ public class ESLookupValuePreprocessor extends
 
 				if (resp.getHits().getTotalHits() > 0) {
 					if (resp.getHits().getTotalHits() > 1) {
-						logger.warn("More results found for lookup over value {}", sourceValue);
+						addDataWarning(chainContext, "More results found during lookup for value '" + sourceValue
+								+ "' so first one is used.");
+						logger.debug("More results found for lookup over value {}", sourceValue);
 					}
 					SearchHit hit = resp.getHits().hits()[0];
 					for (Map<String, String> mappingRecord : resultMapping) {
@@ -339,7 +345,7 @@ public class ESLookupValuePreprocessor extends
 						value.put(mappingRecord.get(CFG_target_field), v);
 					}
 				} else {
-					processDefaultValues(sourceValue, data, value);
+					processDefaultValues(sourceValue, data, value, chainContext);
 				}
 
 				esExceptionWarned = false;
@@ -349,7 +355,7 @@ public class ESLookupValuePreprocessor extends
 					logger.warn("ElasticSearch lookup failed due '{}:{}' so default value is used for field instead", e
 							.getClass().getName(), e.getMessage());
 				}
-				processDefaultValues(sourceValue, data, value);
+				processDefaultValues(sourceValue, data, value, chainContext);
 			}
 		}
 
@@ -359,7 +365,8 @@ public class ESLookupValuePreprocessor extends
 		return value;
 	}
 
-	private void processDefaultValues(Object sourceValue, Map<String, Object> data, Map<String, Object> value) {
+	private void processDefaultValues(Object sourceValue, Map<String, Object> data, Map<String, Object> value,
+			PreprocessChainContext chainContext) {
 		for (Map<String, String> mappingRecord : resultMapping) {
 			if (mappingRecord.get(CFG_value_default) != null) {
 				Object v = ValueUtils.processStringValuePatternReplacement(mappingRecord.get(CFG_value_default), data,
@@ -367,6 +374,7 @@ public class ESLookupValuePreprocessor extends
 				value.put(mappingRecord.get(CFG_target_field), v);
 			} else {
 				value.put(mappingRecord.get(CFG_target_field), null);
+				addDataWarning(chainContext, "No result found during lookup for value '" + sourceValue + "'");
 			}
 		}
 	}

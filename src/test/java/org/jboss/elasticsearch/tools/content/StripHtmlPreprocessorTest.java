@@ -115,12 +115,12 @@ public class StripHtmlPreprocessorTest {
 		tested.fieldTarget = "target";
 
 		// case - not NPE
-		tested.preprocessData(null);
+		tested.preprocessData(null, null);
 
 		// case - leave null if no value defined
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertNull(values.get(tested.fieldTarget));
 		}
 
@@ -128,15 +128,23 @@ public class StripHtmlPreprocessorTest {
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, new Integer(10));
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertNull(values.get(tested.fieldTarget));
+		}
+		{
+			Map<String, Object> values = new HashMap<String, Object>();
+			values.put(tested.fieldSource, new Integer(10));
+			PreprocessChainContextImpl context = new PreprocessChainContextImpl();
+			tested.preprocessData(values, context);
+			Assert.assertNull(values.get(tested.fieldTarget));
+			Assert.assertTrue(context.isWarning());
 		}
 
 		// case - leave size if empty
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, "");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("", values.get(tested.fieldTarget));
 		}
 
@@ -144,7 +152,7 @@ public class StripHtmlPreprocessorTest {
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, "   ");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("   ", values.get(tested.fieldTarget));
 		}
 
@@ -154,7 +162,7 @@ public class StripHtmlPreprocessorTest {
 			values
 					.put(tested.fieldSource,
 							"<b>aa<b>bb<br>cdgh &lt;<div>text in div</div>\n &amp; then\n invalid <p> paragraph <pre>test\npre &amp;</pre>");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("aa bb cdgh < text in div & then invalid paragraph test pre &",
 					(String) values.get(tested.fieldTarget));
 		}
@@ -169,7 +177,7 @@ public class StripHtmlPreprocessorTest {
 			values2
 					.put("source",
 							"<b>aa<b>bb<br>cdgh &lt;<div>text in div</div>\n &amp; then\n invalid <p> paragraph <pre>test\npre &amp;</pre>");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("aa bb cdgh < text in div & then invalid paragraph test pre &",
 					(String) values2.get("target"));
 		}
@@ -198,7 +206,7 @@ public class StripHtmlPreprocessorTest {
 			Map<String, Object> comment2 = createDataStructureMap("cc <div>dd</div>", null);
 			comments.add(comment2);
 
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 
 			assertDataStructure(values.get("author"), "aa <b>bb", "aa bb");
 			assertDataStructure(values.get("editor"), "cc <div>dd</div>", "cc dd");

@@ -35,30 +35,35 @@ public abstract class StructuredContentPreprocessorWithSourceBasesBase<T> extend
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, Object> preprocessData(Map<String, Object> data) {
+	public Map<String, Object> preprocessData(Map<String, Object> data, PreprocessChainContext chainContext) {
 		if (data == null)
 			return null;
 
 		if (sourceBases == null) {
-			processOneSourceValue(data, null, null);
+			processOneSourceValue(data, null, null, chainContext);
 		} else {
 			T context = createContext();
 			for (String base : sourceBases) {
 				Object obj = XContentMapValues.extractValue(base, data);
 				if (obj != null) {
 					if (obj instanceof Map) {
-						processOneSourceValue((Map<String, Object>) obj, context, base);
+						processOneSourceValue((Map<String, Object>) obj, context, base, chainContext);
 					} else if (obj instanceof Collection) {
 						for (Object o : (Collection<Object>) obj) {
 							if (o instanceof Map) {
-								processOneSourceValue((Map<String, Object>) o, context, base);
+								processOneSourceValue((Map<String, Object>) o, context, base, chainContext);
 							} else {
-								logger.warn("Source base {} contains collection with invalid value to be processed {}, so skipped",
-										base, obj);
+								String msg = "Collection if field '" + base
+										+ "' contains value which is not Map, which can't be processed as source_base, so is skipped";
+								addDataWarning(chainContext, msg);
+								logger.debug(msg);
 							}
 						}
 					} else {
-						logger.warn("Source base {} contains invalid value to be processed {}, so skipped", base, obj);
+						String msg = "Field '" + base
+								+ "' contains invalid value which can't be processed as source_base, so is skipped";
+						addDataWarning(chainContext, msg);
+						logger.debug(msg);
 					}
 				}
 			}
@@ -74,8 +79,10 @@ public abstract class StructuredContentPreprocessorWithSourceBasesBase<T> extend
 	 * @param context from {@link #createContext()}
 	 * @param base processing is called for. Can be null if not called for base. It is just for use in warning messages
 	 *          etc (for example {@link #getFullFieldName(String, String)}).
+	 * @param chainContext preprocessor chain context
 	 */
-	protected abstract void processOneSourceValue(Map<String, Object> data, T context, String base);
+	protected abstract void processOneSourceValue(Map<String, Object> data, T context, String base,
+			PreprocessChainContext chainContext);
 
 	/**
 	 * Create shared context object passed to each call of {@link #preprocessData(Map)} if "source_bases" concept is used.

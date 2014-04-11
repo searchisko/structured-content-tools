@@ -56,7 +56,7 @@ public class RequiredValidatorPreprocessor extends StructuredContentPreprocessor
 	}
 
 	@Override
-	public Map<String, Object> preprocessData(Map<String, Object> data) {
+	public Map<String, Object> preprocessData(Map<String, Object> data, PreprocessChainContext chainContext) {
 		if (data == null)
 			return null;
 		Object sourceData = XContentMapValues.extractValue(field, data);

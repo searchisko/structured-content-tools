@@ -63,7 +63,8 @@ public class TrimStringValuePreprocessor extends StructuredContentPreprocessorWi
 	}
 
 	@Override
-	protected void processOneSourceValue(Map<String, Object> data, Object context, String base) {
+	protected void processOneSourceValue(Map<String, Object> data, Object context, String base,
+			PreprocessChainContext chainContext) {
 		Object v = null;
 		if (fieldSource.contains(".")) {
 			v = XContentMapValues.extractValue(fieldSource, data);
@@ -73,8 +74,10 @@ public class TrimStringValuePreprocessor extends StructuredContentPreprocessorWi
 
 		if (v != null) {
 			if (!(v instanceof String)) {
-				logger.warn("value for field '" + fieldSource + "' is not String, so can't be processed by '" + name
-						+ "' preprocessor");
+				String msg = "Value for field '" + getFullFieldName(base, fieldSource)
+						+ "' is not String, so can't be processed";
+				addDataWarning(chainContext, msg);
+				logger.debug(msg);
 			} else {
 				String origValue = v.toString().trim();
 				if (origValue.length() > maxSize) {

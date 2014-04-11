@@ -175,7 +175,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 			{
 				Map<String, Object> values = new HashMap<String, Object>();
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "AAA");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
 
@@ -183,7 +183,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "BBB");
 				StructureUtils.putValueIntoMapOfMaps(values, "project.code", "jjj");
 				StructureUtils.putValueIntoMapOfMaps(values, "project_name", "aaa");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
 			}
@@ -195,17 +195,17 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 			{
 				Map<String, Object> values = new HashMap<String, Object>();
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ORG");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("jbossorg", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertEquals("jboss.org", (String) XContentMapValues.extractValue("project_name", values));
 
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ORGA");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("jbossorg", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertEquals("jboss.org", (String) XContentMapValues.extractValue("project_name", values));
 
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ISPN");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("infinispan", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertEquals("Infinispan", (String) XContentMapValues.extractValue("project_name", values));
 			}
@@ -214,7 +214,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 			{
 				Map<String, Object> values = new HashMap<String, Object>();
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "AAA");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
 
@@ -222,7 +222,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "BBB");
 				StructureUtils.putValueIntoMapOfMaps(values, "project.code", "jjj");
 				StructureUtils.putValueIntoMapOfMaps(values, "project_name", "aaa");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
 			}
@@ -234,7 +234,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 						.put(ESLookupValuePreprocessor.CFG_value_default, "unknown {field} for {__original}");
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "BBB");
 				StructureUtils.putValueIntoMapOfMaps(values, "field", "jj");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("unknown jj for BBB", (String) XContentMapValues.extractValue("project.code", values));
 			}
 
@@ -247,7 +247,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				obj.add("ISPN");
 				obj.add("AAA");
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, obj);
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				List<Object> l = (List<Object>) XContentMapValues.extractValue("project.code", values);
 				Assert.assertEquals(3, l.size());
 				Assert.assertTrue(l.contains("jbossorg"));
@@ -288,17 +288,17 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 
 				Map<String, Object> values = new HashMap<String, Object>();
 				StructureUtils.putValueIntoMapOfMaps(values, testInputField, "ORG");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("jbossorg", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertEquals("jboss.org", (String) XContentMapValues.extractValue("project_name", values));
 
 				StructureUtils.putValueIntoMapOfMaps(values, testInputField, "ORGA");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("jbossorg", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertEquals("jboss.org", (String) XContentMapValues.extractValue("project_name", values));
 
 				StructureUtils.putValueIntoMapOfMaps(values, testInputField, "ISPN");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("infinispan", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertEquals("Infinispan", (String) XContentMapValues.extractValue("project_name", values));
 			}
@@ -312,7 +312,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				Map<String, Object> values = new HashMap<String, Object>();
 				StructureUtils.putValueIntoMapOfMaps(values, "sv1", "test");
 				StructureUtils.putValueIntoMapOfMaps(values, "sv2", "org");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("jbossorg", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertEquals("jboss.org", (String) XContentMapValues.extractValue("project_name", values));
 			}
@@ -325,7 +325,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 
 				Map<String, Object> values = new HashMap<String, Object>();
 				StructureUtils.putValueIntoMapOfMaps(values, testInputField, "AAA");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
 
@@ -333,7 +333,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				StructureUtils.putValueIntoMapOfMaps(values, testInputField, "BBB");
 				StructureUtils.putValueIntoMapOfMaps(values, "project.code", "jjj");
 				StructureUtils.putValueIntoMapOfMaps(values, "project_name", "aaa");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
 			}
@@ -349,7 +349,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 						.put(ESLookupValuePreprocessor.CFG_value_default, "unknown {field} for {__original}");
 				StructureUtils.putValueIntoMapOfMaps(values, testInputField, "BBB");
 				StructureUtils.putValueIntoMapOfMaps(values, "field", "jj");
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 				Assert.assertEquals("unknown jj for BBB", (String) XContentMapValues.extractValue("project.code", values));
 			}
 
@@ -387,7 +387,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				comment2.put("author", createProjectStructureMap("ISPN", "Infinispan"));
 				comments.add(comment2);
 
-				tested.preprocessData(values);
+				tested.preprocessData(values, null);
 
 				assertProjectStructure(values.get("author"), "ORG", "jboss.org project", "jbossorg");
 				assertProjectStructure(values.get("editor"), "ISPN", "Infinispan", "infinispan");

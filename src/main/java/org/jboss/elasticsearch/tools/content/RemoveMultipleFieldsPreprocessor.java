@@ -63,7 +63,8 @@ public class RemoveMultipleFieldsPreprocessor extends StructuredContentPreproces
 	}
 
 	@Override
-	protected void processOneSourceValue(Map<String, Object> data, Object context, String base) {
+	protected void processOneSourceValue(Map<String, Object> data, Object context, String base,
+			PreprocessChainContext chainContext) {
 		for (String key : fields) {
 			StructureUtils.removeValueFromMapOfMaps(data, key);
 		}

@@ -83,7 +83,7 @@ public class SimpleValueMapMapperPreprocessor extends StructuredContentPreproces
 	}
 
 	@Override
-	public Map<String, Object> preprocessData(Map<String, Object> data) {
+	public Map<String, Object> preprocessData(Map<String, Object> data, PreprocessChainContext chainContext) {
 		if (data == null)
 			return null;
 
@@ -97,10 +97,10 @@ public class SimpleValueMapMapperPreprocessor extends StructuredContentPreproces
 		if (v == null) {
 			putDefaultValue(data, null);
 		} else if (v instanceof Map || v instanceof Collection || v.getClass().isArray()) {
-			logger
-					.warn("value for field '" + fieldSource
-							+ "' is not simple value (but is List or Array or Map), so can't be processed by '" + name
-							+ "' preprocessor");
+			String msg = "Value for field '" + fieldSource
+					+ "' is not simple value (but is List or Array or Map), so can't be processed";
+			addDataWarning(chainContext, msg);
+			logger.debug(msg);
 		} else {
 			String origValue = v.toString();
 			String newVal = null;

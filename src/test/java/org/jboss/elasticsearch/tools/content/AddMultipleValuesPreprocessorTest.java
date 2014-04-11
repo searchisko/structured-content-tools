@@ -72,7 +72,7 @@ public class AddMultipleValuesPreprocessorTest {
 		tested.fields = settings;
 
 		// case - not NPE
-		tested.preprocessData(null);
+		tested.preprocessData(null, null);
 
 		// case - leave null if no value defined
 		{
@@ -83,7 +83,7 @@ public class AddMultipleValuesPreprocessorTest {
 			user.put("name", "Joe");
 			values.put("user", user);
 
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("constant value", values.get("field_constant"));
 			Assert.assertEquals("", values.get("field_empty"));
 			Assert.assertNull(values.get("field_null"));

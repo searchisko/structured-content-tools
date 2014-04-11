@@ -103,12 +103,12 @@ public class ValuesCollectingPreprocessorTest {
 		tested.init("Test mapper", null, TestUtils.loadJSONFromClasspathFile("/ValuesCollecting_preprocessData.json"));
 
 		// case - not NPE
-		tested.preprocessData(null);
+		tested.preprocessData(null, null);
 
 		// case - nothing in input, so no output value added
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertNull(values.get("target"));
 		}
 
@@ -116,7 +116,7 @@ public class ValuesCollectingPreprocessorTest {
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put("target", "something to delete");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertNull(values.get("target"));
 		}
 
@@ -129,7 +129,7 @@ public class ValuesCollectingPreprocessorTest {
 			values.put("source_nested", nested);
 			nested.put("value1", "nested value 1");
 
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			List<Object> vals = (List<Object>) values.get("target");
 			Assert.assertNotNull(vals);
 			Assert.assertEquals(2, vals.size());
@@ -166,7 +166,7 @@ public class ValuesCollectingPreprocessorTest {
 
 			tested.fieldTarget = "target.level1";
 
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			List<Object> vals = (List<Object>) XContentMapValues.extractValue(tested.fieldTarget, values);
 			Assert.assertNotNull(vals);
 			Assert.assertEquals(8, vals.size());

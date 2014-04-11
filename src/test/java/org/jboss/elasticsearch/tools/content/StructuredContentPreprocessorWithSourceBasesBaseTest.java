@@ -64,15 +64,15 @@ public class StructuredContentPreprocessorWithSourceBasesBaseTest {
 		StructuredContentPreprocessorWithSourceBasesBase tested = Mockito
 				.mock(StructuredContentPreprocessorWithSourceBasesBase.class);
 		Mockito.doCallRealMethod().when(tested).init(Mockito.anyMap());
-		Mockito.doCallRealMethod().when(tested).preprocessData(Mockito.anyMap());
+		Mockito.doCallRealMethod().when(tested).preprocessData(Mockito.anyMap(), Mockito.any(PreprocessChainContext.class));
 		Mockito.doCallRealMethod().when(tested).getSourceBases();
 		Map<String, Object> settings = new HashMap<String, Object>();
 		tested.init(settings);
 
-		Assert.assertNull(tested.preprocessData(null));
+		Assert.assertNull(tested.preprocessData(null, null));
 
 		Mockito.verify(tested).init(settings);
-		Mockito.verify(tested).preprocessData(Mockito.anyMap());
+		Mockito.verify(tested).preprocessData(Mockito.anyMap(), Mockito.any(PreprocessChainContext.class));
 		Mockito.verify(tested, Mockito.times(0)).createContext();
 		Mockito.verifyNoMoreInteractions(tested);
 	}
@@ -83,17 +83,17 @@ public class StructuredContentPreprocessorWithSourceBasesBaseTest {
 		StructuredContentPreprocessorWithSourceBasesBase tested = Mockito
 				.mock(StructuredContentPreprocessorWithSourceBasesBase.class);
 		Mockito.doCallRealMethod().when(tested).init(Mockito.anyMap());
-		Mockito.doCallRealMethod().when(tested).preprocessData(Mockito.anyMap());
+		Mockito.doCallRealMethod().when(tested).preprocessData(Mockito.anyMap(), Mockito.any(PreprocessChainContext.class));
 		Mockito.doCallRealMethod().when(tested).getSourceBases();
 		Map<String, Object> settings = new HashMap<String, Object>();
 		tested.init(settings);
 
 		Map<String, Object> data = new HashMap<String, Object>();
-		Assert.assertEquals(data, tested.preprocessData(data));
+		Assert.assertEquals(data, tested.preprocessData(data, null));
 
 		Mockito.verify(tested).init(settings);
-		Mockito.verify(tested).preprocessData(data);
-		Mockito.verify(tested).processOneSourceValue(data, null, null);
+		Mockito.verify(tested).preprocessData(data, null);
+		Mockito.verify(tested).processOneSourceValue(data, null, null, null);
 		Mockito.verify(tested, Mockito.times(0)).createContext();
 		Mockito.verifyNoMoreInteractions(tested);
 	}
@@ -103,9 +103,12 @@ public class StructuredContentPreprocessorWithSourceBasesBaseTest {
 	public void preprocessData_bases() {
 		StructuredContentPreprocessorWithSourceBasesBase tested = Mockito
 				.mock(StructuredContentPreprocessorWithSourceBasesBase.class);
+		tested.name = "mypreproc";
 		Mockito.doCallRealMethod().when(tested).init(Mockito.anyMap());
-		Mockito.doCallRealMethod().when(tested).preprocessData(Mockito.anyMap());
+		Mockito.doCallRealMethod().when(tested).preprocessData(Mockito.anyMap(), Mockito.any(PreprocessChainContext.class));
 		Mockito.doCallRealMethod().when(tested).getSourceBases();
+		Mockito.doCallRealMethod().when(tested)
+				.addDataWarning(Mockito.any(PreprocessChainContext.class), Mockito.anyString());
 		tested.logger = Mockito.mock(ESLogger.class);
 		Object mockContext = new Object();
 		Mockito.when(tested.createContext()).thenReturn(mockContext);
@@ -134,16 +137,20 @@ public class StructuredContentPreprocessorWithSourceBasesBaseTest {
 		// will be skipped as it is bad type
 		comment2Mock.put("editor", "bad type 2");
 
-		Assert.assertEquals(data, tested.preprocessData(data));
+		PreprocessChainContextImpl chainContext = new PreprocessChainContextImpl();
+		Assert.assertEquals(data, tested.preprocessData(data, chainContext));
 
 		Mockito.verify(tested).init(settings);
-		Mockito.verify(tested).preprocessData(data);
-		Mockito.verify(tested).processOneSourceValue(authorMock, mockContext, "author");
+		Mockito.verify(tested).preprocessData(data, chainContext);
+		Mockito.verify(tested).processOneSourceValue(authorMock, mockContext, "author", chainContext);
 		Mockito.verify(tested, Mockito.times(1)).processOneSourceValue(Mockito.eq(author2Mock), Mockito.eq(mockContext),
-				Mockito.eq("comments.author"));
-		Mockito.verify(tested).processOneSourceValue(editor1Mock, mockContext, "comments.editor");
+				Mockito.eq("comments.author"), Mockito.eq(chainContext));
+		Mockito.verify(tested).processOneSourceValue(editor1Mock, mockContext, "comments.editor", chainContext);
 		Mockito.verify(tested, Mockito.times(1)).createContext();
+		Mockito.verify(tested, Mockito.times(2)).addDataWarning(Mockito.eq(chainContext), Mockito.anyString());
 		Mockito.verifyNoMoreInteractions(tested);
+		Assert.assertTrue(chainContext.isWarning());
+		Assert.assertEquals(2, chainContext.getWarnings().size());
 	}
 
 }

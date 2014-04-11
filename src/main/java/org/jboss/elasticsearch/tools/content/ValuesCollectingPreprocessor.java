@@ -62,7 +62,7 @@ public class ValuesCollectingPreprocessor extends StructuredContentPreprocessorB
 	}
 
 	@Override
-	public Map<String, Object> preprocessData(Map<String, Object> data) {
+	public Map<String, Object> preprocessData(Map<String, Object> data, PreprocessChainContext chainContext) {
 		if (data == null)
 			return null;
 		Set<Object> vals = new HashSet<Object>();

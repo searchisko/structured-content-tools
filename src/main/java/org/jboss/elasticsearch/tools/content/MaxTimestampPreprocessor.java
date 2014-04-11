@@ -60,7 +60,7 @@ public class MaxTimestampPreprocessor extends StructuredContentPreprocessorBase 
 	}
 
 	@Override
-	public Map<String, Object> preprocessData(Map<String, Object> data) {
+	public Map<String, Object> preprocessData(Map<String, Object> data, PreprocessChainContext chainContext) {
 		if (data == null)
 			return null;
 
@@ -83,8 +83,15 @@ public class MaxTimestampPreprocessor extends StructuredContentPreprocessorBase 
 								}
 							}
 						} catch (Exception e) {
-							logger.debug("Value {} is not valid timestamp", 0);
+							String msg = "Value '" + o + "' in filed '" + fieldSource + "'is not valid timestamp";
+							addDataWarning(chainContext, msg);
+							logger.debug(msg);
 						}
+					} else {
+						String msg = "Value for field '" + fieldSource + "' is not String but is "
+								+ sourceData.getClass().getName();
+						addDataWarning(chainContext, msg);
+						logger.debug(msg);
 					}
 				}
 			} else if (sourceData instanceof String) {
@@ -97,11 +104,15 @@ public class MaxTimestampPreprocessor extends StructuredContentPreprocessorBase 
 						maxTimestamp = timestamp;
 					}
 				} catch (Exception e) {
-					logger.debug("Value {} is not valid timestamp", 0);
+					String msg = "Value '" + sourceData + "' in filed '" + fieldSource + "'is not valid timestamp";
+					addDataWarning(chainContext, msg);
+					logger.debug(msg);
 				}
 			} else {
-				logger.debug("Value for field {} is not Iterable nor String but is {}", fieldSource, sourceData.getClass()
-						.getName());
+				String msg = "Value for field '" + fieldSource + "' is not Iterable nor String but is "
+						+ sourceData.getClass().getName();
+				addDataWarning(chainContext, msg);
+				logger.debug(msg);
 			}
 		} else {
 			logger.debug("Value for field {} not found in data", fieldSource);

@@ -85,12 +85,12 @@ public class RequiredValidatorPreprocessorTest {
 		tested.field = "my_field";
 
 		// case - not NPE
-		tested.preprocessData(null);
+		tested.preprocessData(null, null);
 
 		Map<String, Object> values = new HashMap<String, Object>();
 		// case - value is null
 		try {
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.fail("InvalidDataException expected");
 		} catch (InvalidDataException e) {
 			// OK
@@ -98,15 +98,15 @@ public class RequiredValidatorPreprocessorTest {
 
 		// cases - matched condition
 		values.put(tested.field, 10);
-		tested.preprocessData(values);
+		tested.preprocessData(values, null);
 
 		values.put(tested.field, "string");
-		tested.preprocessData(values);
+		tested.preprocessData(values, null);
 
 		// case - fail due empty String
 		try {
 			values.put(tested.field, "");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.fail("InvalidDataException expected");
 		} catch (InvalidDataException e) {
 			// OK
@@ -115,7 +115,7 @@ public class RequiredValidatorPreprocessorTest {
 		// case - fail due blank String
 		try {
 			values.put(tested.field, "    ");
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.fail("InvalidDataException expected");
 		} catch (InvalidDataException e) {
 			// OK
@@ -125,7 +125,7 @@ public class RequiredValidatorPreprocessorTest {
 		List<Object> l = new ArrayList<Object>();
 		values.put(tested.field, l);
 		try {
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.fail("InvalidDataException expected");
 		} catch (InvalidDataException e) {
 			// OK
@@ -133,6 +133,6 @@ public class RequiredValidatorPreprocessorTest {
 
 		// case - ok for nonempty collection
 		l.add("something");
-		tested.preprocessData(values);
+		tested.preprocessData(values, null);
 	}
 }

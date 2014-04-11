@@ -80,13 +80,13 @@ public class MaxTimestampPreprocessorTest {
 		tested.init("Test mapper", client, settings);
 
 		// case - not NPE
-		tested.preprocessData(null);
+		tested.preprocessData(null, null);
 
 		// case - let target null if input field is empty
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put("target", new Integer(10));
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals(null, values.get("target"));
 		}
 
@@ -94,11 +94,13 @@ public class MaxTimestampPreprocessorTest {
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put("source", new Integer(10));
-			tested.preprocessData(values);
+			PreprocessChainContextImpl chainContext = new PreprocessChainContextImpl();
+			tested.preprocessData(values, chainContext);
 			Assert.assertEquals(null, values.get("target"));
+			Assert.assertTrue(chainContext.isWarning());
 		}
 
-		// case - select max from list, ignore bad value formats and types
+		// case - select max from list, ignore bad value formats and types - no chainContext
 		{
 			Map<String, Object> values = new HashMap<String, Object>();
 			List<Object> source = new ArrayList<Object>();
@@ -108,8 +110,24 @@ public class MaxTimestampPreprocessorTest {
 			source.add("2012-01-15T17:40:45+0100");
 			source.add(new Integer(10));
 			values.put("source", source);
-			tested.preprocessData(values);
+			tested.preprocessData(values, null);
 			Assert.assertEquals("2012-01-15T17:40:44Z", values.get("target"));
+		}
+
+		// case - select max from list, ignore bad value formats and types - is chainContext
+		{
+			Map<String, Object> values = new HashMap<String, Object>();
+			List<Object> source = new ArrayList<Object>();
+			source.add("2012-01-15T12:24:44Z");
+			source.add("badformat");
+			source.add("2012-01-15T17:40:45+0100");
+			source.add(new Integer(10));
+			source.add("2012-01-15T17:40:44Z");
+			values.put("source", source);
+			PreprocessChainContextImpl chainContext = new PreprocessChainContextImpl();
+			tested.preprocessData(values, chainContext);
+			Assert.assertEquals("2012-01-15T17:40:44Z", values.get("target"));
+			Assert.assertEquals(2, chainContext.getWarnings().size());
 		}
 
 	}
