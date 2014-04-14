@@ -6,9 +6,11 @@ represented in Java as [`Map of Maps` structure](http://wiki.fasterxml.com/Jacks
 This structure is used often to represent variable JSON data. 
 
 We use this framework to allow highly configurable manipulation with content before store 
-into ElasticSearch search index, for example in [JIRA River Plugin for 
-ElasticSearch](https://github.com/jbossorg/elasticsearch-river-jira) 
-or [DCP platform](https://github.com/jbossorg/dcp-api).
+into Elasticsearch search index, for example in [JIRA River Plugin for 
+Elasticsearch](https://github.com/searchisko/elasticsearch-river-jira),
+[Universal Remote API River Plugin for 
+Elasticsearch](https://github.com/searchisko/elasticsearch-river-remote) 
+or [Searchisko](https://github.com/searchisko/searchisko).
 
 Content manipulation is performed over chain of Preprocessors. Each preprocessor 
 must implement [`org.jboss.elasticsearch.tools.content.StructuredContentPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/StructuredContentPreprocessor.java) 
