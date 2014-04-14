@@ -1,7 +1,8 @@
 { 
   "project" : {
     "properties" : {    
-      "jbossorg_jira_project" : {"type" : "string", "analyzer" : "keyword"}
+      "jbossorg_jira_project" : {"type" : "string", "analyzer" : "keyword"},
+      "jbossorg_jira_project_2": {"type" : "string", "analyzer" : "keyword"}
     }
   }
 }

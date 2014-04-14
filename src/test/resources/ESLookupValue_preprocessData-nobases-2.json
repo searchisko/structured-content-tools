@@ -1,0 +1,11 @@
+{
+          "index_name"        : "projects",
+          "index_type"        : "project",
+          "source_value"      : "source {value}",
+          "idx_search_field"  : ["jbossorg_jira_project_2","jbossorg_jira_project"],
+          "result_multiple_ignore" : true,
+          "result_mapping"    : [ 
+              {"idx_result_field":"code", "target_field":"project.code", "value_default":"defval"},
+              {"idx_result_field":"name", "target_field":"project_name"} 
+          ]
+} 

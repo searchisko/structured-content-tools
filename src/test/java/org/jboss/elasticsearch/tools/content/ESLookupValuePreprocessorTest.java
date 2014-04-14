@@ -136,7 +136,9 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 			Assert.assertEquals("project", tested.indexType);
 			Assert.assertEquals("fields.projectcode", tested.sourceField);
 			Assert.assertNull(tested.sourceValuePattern);
-			Assert.assertEquals("jbossorg_jira_project", tested.idxSearchField);
+			Assert.assertEquals(1, tested.idxSearchField.size());
+			Assert.assertEquals("jbossorg_jira_project", tested.idxSearchField.get(0));
+			Assert.assertEquals(false, tested.ignoreMultipleResults);
 			Assert.assertEquals(2, ((List) tested.resultMapping).size());
 			Assert.assertEquals("code", tested.resultMapping.get(0).get(ESLookupValuePreprocessor.CFG_idx_result_field));
 			Assert.assertEquals("project.code", tested.resultMapping.get(0).get(ESLookupValuePreprocessor.CFG_target_field));
@@ -146,18 +148,20 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 			Assert.assertEquals(null, tested.resultMapping.get(1).get(ESLookupValuePreprocessor.CFG_value_default));
 		}
 
-		// case - sourceValue used instead of sourceField
+		// case - sourceValue used instead of sourceField, more index source fields, multiple handling on true
 		{
 			ESLookupValuePreprocessor tested = new ESLookupValuePreprocessor();
 			Client client = Mockito.mock(Client.class);
 
-			Map<String, Object> settings = TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData-nobases.json");
-			settings.put(ESLookupValuePreprocessor.CFG_source_field, "");
-			settings.put(ESLookupValuePreprocessor.CFG_source_value, "source {value}");
+			Map<String, Object> settings = TestUtils
+					.loadJSONFromClasspathFile("/ESLookupValue_preprocessData-nobases-2.json");
 			tested.init("Test mapper", client, settings);
 			Assert.assertEquals("source {value}", tested.sourceValuePattern);
 			Assert.assertNull(tested.sourceField);
-
+			Assert.assertEquals(true, tested.ignoreMultipleResults);
+			Assert.assertEquals(2, tested.idxSearchField.size());
+			Assert.assertEquals("jbossorg_jira_project_2", tested.idxSearchField.get(0));
+			Assert.assertEquals("jbossorg_jira_project", tested.idxSearchField.get(1));
 		}
 	}
 
@@ -210,6 +214,27 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				Assert.assertEquals("Infinispan", (String) XContentMapValues.extractValue("project_name", values));
 			}
 
+			// case - found multiple values over lookup - first one is used
+			{
+				Map<String, Object> values = new HashMap<String, Object>();
+				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ES");
+				tested.preprocessData(values, null);
+				Assert.assertEquals("elasticsearch", (String) XContentMapValues.extractValue("project.code", values));
+				// we test there that missing result field is not NPE
+				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
+			}
+
+			// case - found multiple values over lookup - ignore mode is used, so default value is added
+			{
+				Map<String, Object> values = new HashMap<String, Object>();
+				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ES");
+				tested.ignoreMultipleResults = true;
+				tested.preprocessData(values, null);
+				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
+				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
+				tested.ignoreMultipleResults = false;
+			}
+
 			// case - lookup for nonexisting value, test both default and not default value defined
 			{
 				Map<String, Object> values = new HashMap<String, Object>();
@@ -227,7 +252,7 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
 			}
 
-			// test rewrite on target field and default pattern
+			// case - test rewrite on target field and default pattern
 			{
 				Map<String, Object> values = new HashMap<String, Object>();
 				tested.resultMapping.get(0)
@@ -257,6 +282,38 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				Assert.assertEquals(2, l.size());
 				Assert.assertTrue(l.contains("jboss.org"));
 				Assert.assertTrue(l.contains("Infinispan"));
+			}
+
+		} finally {
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
+	public void preprocessData_nobases_sourceField_idx_search_field_fallback() throws Exception {
+		try {
+			Client client = prepareESClientForUnitTest();
+
+			ESLookupValuePreprocessor tested = new ESLookupValuePreprocessor();
+			tested.init("Test mapper", client,
+					TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData-nobases-2.json"));
+			tested.sourceField = "sf";
+			tested.sourceValuePattern = null;
+			// assert we have correct configuration for the test
+			Assert.assertEquals(2, tested.idxSearchField.size());
+			Assert.assertEquals("jbossorg_jira_project_2", tested.idxSearchField.get(0));
+			Assert.assertEquals("jbossorg_jira_project", tested.idxSearchField.get(1));
+
+			// fill testing data
+			prepareTestData(client, tested);
+
+			// case - lookup for existing value
+			{
+				Map<String, Object> values = new HashMap<String, Object>();
+				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ORG");
+				tested.preprocessData(values, null);
+				Assert.assertEquals("jbossorg", (String) XContentMapValues.extractValue("project.code", values));
+				Assert.assertEquals("jboss.org", (String) XContentMapValues.extractValue("project_name", values));
 			}
 
 		} finally {

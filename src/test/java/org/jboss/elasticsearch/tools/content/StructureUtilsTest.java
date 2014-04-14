@@ -100,6 +100,68 @@ public class StructureUtilsTest {
 	}
 
 	@Test
+	public void getListOfStringValues() {
+
+		// case - null result from null data
+		Assert.assertNull(StructureUtils.getListOfStringValues(null, "aa"));
+
+		// case - key param validation
+		Map<String, Object> values = new HashMap<String, Object>();
+		try {
+			Assert.assertNull(StructureUtils.getListOfStringValues(values, null));
+			Assert.fail();
+		} catch (IllegalArgumentException e) {
+			// ok
+		}
+		try {
+			Assert.assertNull(StructureUtils.getListOfStringValues(values, "  "));
+			Assert.fail();
+		} catch (IllegalArgumentException e) {
+			// ok
+		}
+
+		// case - null result for nonexisting case
+		Assert.assertNull(StructureUtils.getListOfStringValues(values, TEST_KEY));
+
+		// case - simple String values handling
+		values.put(TEST_KEY, "teststring");
+		Assert.assertEquals(1, StructureUtils.getListOfStringValues(values, TEST_KEY).size());
+		Assert.assertEquals("teststring", StructureUtils.getListOfStringValues(values, TEST_KEY).get(0));
+
+		values.put(TEST_KEY, "");
+		Assert.assertNull(StructureUtils.getListOfStringValues(values, TEST_KEY));
+
+		values.put(TEST_KEY, "   ");
+		Assert.assertNull(StructureUtils.getListOfStringValues(values, TEST_KEY));
+
+		// case - simple other values handling
+		values.put(TEST_KEY, new Integer(10));
+		Assert.assertEquals(1, StructureUtils.getListOfStringValues(values, TEST_KEY).size());
+		Assert.assertEquals("10", StructureUtils.getListOfStringValues(values, TEST_KEY).get(0));
+
+		// case - Map value handling - results in null
+		Map<String, Object> tm = new HashMap<String, Object>();
+		tm.put("a", "b");
+		values.put(TEST_KEY, tm);
+		Assert.assertNull(StructureUtils.getListOfStringValues(values, TEST_KEY));
+
+		// case - List of values handling
+		List<Object> l = new ArrayList<Object>();
+		values.put(TEST_KEY, l);
+		Assert.assertNull(StructureUtils.getListOfStringValues(values, TEST_KEY));
+
+		l.add("aa");
+		Assert.assertEquals(1, StructureUtils.getListOfStringValues(values, TEST_KEY).size());
+		Assert.assertEquals("aa", StructureUtils.getListOfStringValues(values, TEST_KEY).get(0));
+
+		l.add(new Integer(10));
+		Assert.assertEquals(2, StructureUtils.getListOfStringValues(values, TEST_KEY).size());
+		Assert.assertEquals("aa", StructureUtils.getListOfStringValues(values, TEST_KEY).get(0));
+		Assert.assertEquals("10", StructureUtils.getListOfStringValues(values, TEST_KEY).get(1));
+
+	}
+
+	@Test
 	public void filterDataInMap() {
 		// case - no exceptions on distinct null and empty inputs
 		StructureUtils.filterDataInMap(null, null);

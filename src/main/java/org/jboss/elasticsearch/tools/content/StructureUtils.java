@@ -6,9 +6,11 @@ package org.jboss.elasticsearch.tools.content;
  * as indicated by the @authors tag. All rights reserved.
  */
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -65,6 +67,54 @@ public class StructureUtils {
 			return null;
 		} else {
 			return node.toString();
+		}
+	}
+
+	/**
+	 * Typesafe get value from map as {@link List} of {@link String}. If map contains only one object for given ket, it
+	 * creates List from it. An {@link Object#toString()} is used for nonstring objects.
+	 * 
+	 * @param values to get value from. Can be null.
+	 * @param key to get value from Map. Must be defined. Dot notation not supported here for nesting!
+	 * @return value for given key as List of String. Never empty, null is returned in this cases.
+	 */
+	@SuppressWarnings("unchecked")
+	public static List<String> getListOfStringValues(Map<String, Object> values, String key) {
+		if (ValueUtils.isEmpty(key))
+			throw new IllegalArgumentException("key must be defined");
+		if (values == null)
+			return null;
+		Object node = values.get(key);
+		if (node == null) {
+			return null;
+		} else if (node instanceof List) {
+			List<Object> nl = (List<Object>) node;
+			if (nl.isEmpty())
+				return null;
+			List<String> ret = new ArrayList<String>();
+			for (Object item : nl) {
+				if (item != null) {
+					String s = ValueUtils.trimToNull(item.toString());
+					if (s != null)
+						ret.add(s);
+				}
+			}
+
+			if (ret.isEmpty())
+				return null;
+			else
+				return ret;
+		} else if (node instanceof Map) {
+			return null;
+		} else {
+			if (node instanceof String) {
+				node = ValueUtils.trimToNull((String) node);
+				if (node == null)
+					return null;
+			}
+			List<String> ret = new ArrayList<String>();
+			ret.add(node.toString());
+			return ret;
 		}
 	}
 

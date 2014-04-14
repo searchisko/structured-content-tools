@@ -19,10 +19,11 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHitField;
 
 /**
- * Content preprocessor which allows to Look up value over ElasticSearch search request containing some value from data
- * structure. This preprocessor requires ElasticSearch client to be passed into
+ * Content preprocessor which allows to Look up value over Elasticsearch search request containing some value from data
+ * structure. This preprocessor requires Elasticsearch client to be passed into
  * {@link #init(String, org.elasticsearch.client.Client, Map)}! Example of configuration for this preprocessor for
  * single value lookup:
  * 
@@ -50,12 +51,17 @@ import org.elasticsearch.search.SearchHit;
  * <li><code>source_field<code> - source field in input data to be used as 'lookup key'. Dot notation for nested values can be used here.
  * <li><code>source_value<code> - value to be used as 'lookup key'. Can be used as alternative instead of <code>source_field<code>. 
  * You can use pattern for keys replacement with values from input data here. Keys are enclosed in curly braces, dot notation for deeper nesting may be used in keys.  
- * <li><code>idx_search_field<code> - field in search index document to be asked for 'lookup key' obtained from source field. ElasticSearch <code>text</code>
- * filter is used against this field. Search is not performed if 'lookup key' is empty.
+ * <li><code>idx_search_field<code> - field in search index document to be asked for 'lookup key' obtained from source field. Elasticsearch <code>text</code>
+ * filter is used against this field. Search is not performed if 'lookup key' is empty. This configuration can contain
+ * array of lookup field's names also. They are looked up in sequence then, if previous one do not provide any concrete
+ * value - so it is sort of fallback mechanism.
+ * <li><code>result_multiple_ignore</code> - defines what to do if lookup returns multiple value. If `false` (default
+ * value) then first result is used. If `true` then lookup result is ignored and default value is used if any. Warning
+ * message is produced for both cases.
  * <li>
  * <code>result_mapping<code> - array of mappings from lookup result to the data. Each mapping definition may contain these fields:
  * <ul>
- * <li><code>idx_result_field<code> - field in found search index document to be placed into target field. First document from search index is used if more found (WARN is logged in this case).
+ * <li><code>idx_result_field<code> - field in found search index document to be placed into target field.
  * <li><code>target_field<code> - target field in data to store looked up value into. Can be same as input field. Dot
  * notation can be used here for structure nesting.
  * <li><code>value_default</code> - optional default value used if lookup do not provide value. If not set then target
@@ -155,7 +161,7 @@ import org.elasticsearch.search.SearchHit;
  * }
  * 
  * <pre>
- * if there will be necessary documents in Elastic Search index called <code>peoples</code> with type <code>people</code>
+ * if there will be necessary documents in Elasticsearch index called <code>peoples</code> with type <code>people</code>
  * with content like:
  * 
  * <pre>
@@ -191,6 +197,7 @@ public class ESLookupValuePreprocessor extends
 	protected static final String CFG_idx_search_field = "idx_search_field";
 	protected static final String CFG_result_mapping = "result_mapping";
 	protected static final String CFG_idx_result_field = "idx_result_field";
+	protected static final String CFG_ignore_multiple_results = "result_multiple_ignore";
 	protected static final String CFG_target_field = "target_field";
 	protected static final String CFG_value_default = "value_default";
 
@@ -198,8 +205,9 @@ public class ESLookupValuePreprocessor extends
 	protected String indexType;
 	protected String sourceField;
 	protected String sourceValuePattern;
-	protected String idxSearchField;
+	protected List<String> idxSearchField;
 	protected List<Map<String, String>> resultMapping;
+	protected boolean ignoreMultipleResults = false;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -224,8 +232,9 @@ public class ESLookupValuePreprocessor extends
 		}
 		resultMapping = (List<Map<String, String>>) settings.get(CFG_result_mapping);
 		validateResultMappingConfiguration(resultMapping, CFG_result_mapping);
-		idxSearchField = XContentMapValues.nodeStringValue(settings.get(CFG_idx_search_field), null);
-		validateConfigurationStringNotEmpty(idxSearchField, CFG_idx_search_field);
+		idxSearchField = StructureUtils.getListOfStringValues(settings, CFG_idx_search_field);
+		validateConfigurationObjectNotEmpty(idxSearchField, CFG_idx_search_field);
+		ignoreMultipleResults = XContentMapValues.nodeBooleanValue(settings.get(CFG_ignore_multiple_results), false);
 	}
 
 	/**
@@ -319,42 +328,67 @@ public class ESLookupValuePreprocessor extends
 			if (context != null && context.lookupCache.containsKey(sourceValue))
 				return context.lookupCache.get(sourceValue);
 
-			try {
-				SearchRequestBuilder req = client.prepareSearch(indexName).setTypes(indexType)
-						.setQuery(QueryBuilders.matchAllQuery())
-						.setPostFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(idxSearchField, sourceValue)));
-				for (Map<String, String> mappingRecord : resultMapping) {
-					req.addField(mappingRecord.get(CFG_idx_result_field));
-				}
+			boolean found = false;
+			for (String idxSf : idxSearchField) {
 
-				SearchResponse resp = req.execute().actionGet();
-
-				if (resp.getHits().getTotalHits() > 0) {
-					if (resp.getHits().getTotalHits() > 1) {
-						addDataWarning(chainContext, "More results found during lookup for value '" + sourceValue
-								+ "' so first one is used.");
-						logger.debug("More results found for lookup over value {}", sourceValue);
-					}
-					SearchHit hit = resp.getHits().hits()[0];
+				try {
+					SearchRequestBuilder req = client.prepareSearch(indexName).setTypes(indexType)
+							.setQuery(QueryBuilders.matchAllQuery())
+							.setPostFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(idxSf, sourceValue)));
 					for (Map<String, String> mappingRecord : resultMapping) {
-						Object v = hit.field(mappingRecord.get(CFG_idx_result_field)).getValue();
-						if (v == null && mappingRecord.get(CFG_value_default) != null) {
-							v = ValueUtils.processStringValuePatternReplacement(mappingRecord.get(CFG_value_default), data,
-									sourceValue);
-						}
-						value.put(mappingRecord.get(CFG_target_field), v);
+						req.addField(mappingRecord.get(CFG_idx_result_field));
 					}
-				} else {
-					processDefaultValues(sourceValue, data, value, chainContext);
-				}
 
-				esExceptionWarned = false;
-			} catch (ElasticsearchException e) {
-				if (!esExceptionWarned) {
-					esExceptionWarned = true;
-					logger.warn("ElasticSearch lookup failed due '{}:{}' so default value is used for field instead", e
-							.getClass().getName(), e.getMessage());
+					SearchResponse resp = req.execute().actionGet();
+
+					if (resp.getHits().getTotalHits() > 0) {
+						if (resp.getHits().getTotalHits() > 1) {
+							String message = "More results found during lookup for value '" + sourceValue + "' using index field '"
+									+ idxSf;
+							if (ignoreMultipleResults)
+								message += "', so we ignore them.";
+							else
+								message += "', so first one is used.";
+
+							addDataWarning(chainContext, message);
+							logger.debug(message);
+							if (ignoreMultipleResults) {
+								continue;
+							}
+						}
+						SearchHit hit = resp.getHits().hits()[0];
+						for (Map<String, String> mappingRecord : resultMapping) {
+							SearchHitField shf = hit.field(mappingRecord.get(CFG_idx_result_field));
+							if (shf != null) {
+								Object v = shf.getValue();
+								if (v == null && mappingRecord.get(CFG_value_default) != null) {
+									v = ValueUtils.processStringValuePatternReplacement(mappingRecord.get(CFG_value_default), data,
+											sourceValue);
+								}
+								value.put(mappingRecord.get(CFG_target_field), v);
+							} else {
+								String message = "Result found during lookup for value '" + sourceValue + "' using index field '"
+										+ idxSf + " but result field '" + mappingRecord.get(CFG_idx_result_field)
+										+ "' is not present there";
+								addDataWarning(chainContext, message);
+								logger.debug(message);
+							}
+						}
+						found = true;
+					}
+
+					esExceptionWarned = false;
+				} catch (ElasticsearchException e) {
+					if (!esExceptionWarned) {
+						esExceptionWarned = true;
+						String message = "Lookup failed due '" + e.getClass().getName() + ":" + e.getMessage()
+								+ "', so default value handling is used.";
+						addDataWarning(chainContext, message);
+						logger.warn(message);
+					}
 				}
+			}
+			if (!found) {
 				processDefaultValues(sourceValue, data, value, chainContext);
 			}
 		}
@@ -374,7 +408,7 @@ public class ESLookupValuePreprocessor extends
 				value.put(mappingRecord.get(CFG_target_field), v);
 			} else {
 				value.put(mappingRecord.get(CFG_target_field), null);
-				addDataWarning(chainContext, "No result found during lookup for value '" + sourceValue + "'");
+				addDataWarning(chainContext, "No result found during lookup for value '" + sourceValue + "'.");
 			}
 		}
 	}
@@ -403,7 +437,7 @@ public class ESLookupValuePreprocessor extends
 		return sourceValuePattern;
 	}
 
-	public String getIdxSearchField() {
+	public List<String> getIdxSearchField() {
 		return idxSearchField;
 	}
 
