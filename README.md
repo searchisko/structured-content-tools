@@ -54,7 +54,10 @@ Framework contains some generic configurable preprocessors implementation:
 * [`StripHtmlPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/StripHtmlPreprocessor.java) - 
   strip HTML tags and unescape HTML entities from String value of source field and store it into target field
 * [`LongToTimestampValuePreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/LongToTimestampValuePreprocessor.java) - interprets 
-  number value of source field as millis from 1.1.1970 timestamp and stores it into target field as string value with ISO formatted timestamp.    
+  number value of source field as millis from 1.1.1970 timestamp and stores it into target field as string value with ISO formatted timestamp.
+* [`RegExpCapturingGroupPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/RegExpCapturingGroupPreprocessor.java) - allows to 
+  extract substrings from source string value by use of Regular expression Capturing groups.  
+
 
 structured-content-tools jar file is available from [JBoss maven 
 repository](https://community.jboss.org/docs/DOC-15169), you can use this 

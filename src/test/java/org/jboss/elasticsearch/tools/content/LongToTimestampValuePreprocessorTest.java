@@ -18,7 +18,7 @@ import org.elasticsearch.common.settings.SettingsException;
 import org.junit.Test;
 
 /**
- * TODO Unit test for {@link LongToTimestampValuePreprocessor}.
+ * Unit test for {@link LongToTimestampValuePreprocessor}.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
  */

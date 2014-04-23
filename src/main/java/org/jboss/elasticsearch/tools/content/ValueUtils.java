@@ -50,6 +50,19 @@ public class ValueUtils {
 	}
 
 	/**
+	 * Check if value is null or empty String.
+	 * 
+	 * @param src value to check
+	 * @return <code>true</code> if value is null or empty String
+	 */
+	public static boolean isEmpty(Object src) {
+		if (src instanceof String)
+			return isEmpty((String) src);
+		else
+			return src == null;
+	}
+
+	/**
 	 * Parse comma separated string into list of tokens. Tokens are trimmed, empty tokens are not in result.
 	 * 
 	 * @param toParse String to parse
