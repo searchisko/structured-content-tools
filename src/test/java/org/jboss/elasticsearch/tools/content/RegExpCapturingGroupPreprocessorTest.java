@@ -27,7 +27,7 @@ public class RegExpCapturingGroupPreprocessorTest {
 	private static final String TARGET_2 = "target2";
 	private static final String TARGET_1 = "target1";
 	private static final String TARGET_0 = "target";
-	private static final Map<Object, String> RESULT_MAPPING_VALID = new HashMap<>();
+	private static final Map<Object, String> RESULT_MAPPING_VALID = new HashMap<Object, String>();
 	static {
 		RESULT_MAPPING_VALID.put(new Integer(0), TARGET_0);
 		RESULT_MAPPING_VALID.put("1", TARGET_1);
@@ -115,7 +115,7 @@ public class RegExpCapturingGroupPreprocessorTest {
 					e.getMessage());
 		}
 
-		Map<Object, Object> rm = new HashMap<>();
+		Map<Object, Object> rm = new HashMap<Object, Object>();
 		settings.put(RegExpCapturingGroupPreprocessor.CFG_RESULT_MAPPING, rm);
 		try {
 			tested.init("Test mapper", null, settings);
