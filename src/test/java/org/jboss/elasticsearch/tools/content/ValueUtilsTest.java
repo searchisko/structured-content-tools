@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -140,6 +141,15 @@ public class ValueUtilsTest {
 				ValueUtils.processStringValuePatternReplacement("Ahoj {__original}, welcome {count} times.", data, "Pool"));
 		Assert.assertEquals("Ahoj , welcome 10 times.",
 				ValueUtils.processStringValuePatternReplacement("Ahoj {__original}, welcome {count} times.", data, null));
+	}
+
+	@Test
+	public void formatISODateTime() {
+		Assert.assertNull(ValueUtils.formatISODateTime(null));
+		Assert.assertEquals(
+				"2012-08-14T12:00:00.0+0000",
+				ValueUtils.formatISODateTime(ISODateTimeFormat.dateTimeParser().parseDateTime("2012-08-14T13:00:00.0+0100")
+						.toDate()));
 	}
 
 }

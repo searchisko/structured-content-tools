@@ -53,6 +53,8 @@ Framework contains some generic configurable preprocessors implementation:
   trim String value from source field to the configured maximal length (whitespaces at the beginning and end are removed too) and store it into target field
 * [`StripHtmlPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/StripHtmlPreprocessor.java) - 
   strip HTML tags and unescape HTML entities from String value of source field and store it into target field
+* [`LongToTimestampValuePreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/LongToTimestampValuePreprocessor.java) - interprets 
+  number value of source field as millis from 1.1.1970 timestamp and stores it into target field as string value with ISO formatted timestamp.    
 
 structured-content-tools jar file is available from [JBoss maven 
 repository](https://community.jboss.org/docs/DOC-15169), you can use this 
