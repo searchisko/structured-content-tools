@@ -180,7 +180,7 @@ public class RegExpCapturingGroupPreprocessor extends StructuredContentPreproces
 	}
 
 	@Override
-	protected Object createContext() {
+	protected Object createContext(Map<String, Object> data) {
 		return null;
 	}
 

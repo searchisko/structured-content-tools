@@ -42,7 +42,7 @@ public abstract class StructuredContentPreprocessorWithSourceBasesBase<T> extend
 		if (sourceBases == null) {
 			processOneSourceValue(data, null, null, chainContext);
 		} else {
-			T context = createContext();
+			T context = createContext(data);
 			for (String base : sourceBases) {
 				Object obj = XContentMapValues.extractValue(base, data);
 				if (obj != null) {
@@ -88,9 +88,10 @@ public abstract class StructuredContentPreprocessorWithSourceBasesBase<T> extend
 	 * Create shared context object passed to each call of {@link #preprocessData(Map)} if "source_bases" concept is used.
 	 * Not called when "source_bases" concept is not used.
 	 * 
+	 * @param data complete data we run preprocessig for
 	 * @return context object or null
 	 */
-	protected abstract T createContext();
+	protected abstract T createContext(Map<String, Object> data);
 
 	/**
 	 * Get full name of field in respect to base with dot notation.

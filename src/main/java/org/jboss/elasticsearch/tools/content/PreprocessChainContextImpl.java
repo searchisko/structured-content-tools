@@ -44,6 +44,11 @@ public class PreprocessChainContextImpl implements PreprocessChainContext {
 		return !warnings.isEmpty();
 	}
 
+	@Override
+	public String toString() {
+		return "PreprocessChainContextImpl [warnings=" + warnings + "]";
+	}
+
 	public static final class DataWarning implements Serializable {
 		private String preprocessorName;
 		private String warningMessage;

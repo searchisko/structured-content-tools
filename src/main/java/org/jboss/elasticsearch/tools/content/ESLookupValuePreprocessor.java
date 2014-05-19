@@ -263,7 +263,7 @@ public class ESLookupValuePreprocessor extends
 	}
 
 	@Override
-	protected LookupContenxt createContext() {
+	protected LookupContenxt createContext(Map<String, Object> data) {
 		return new LookupContenxt();
 	}
 

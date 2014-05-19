@@ -67,7 +67,7 @@ public class StripHtmlPreprocessor extends StructuredContentPreprocessorWithSour
 	}
 
 	@Override
-	protected Object createContext() {
+	protected Object createContext(Map<String, Object> data) {
 		return null;
 	}
 

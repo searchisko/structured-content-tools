@@ -57,6 +57,9 @@ Framework contains some generic configurable preprocessors implementation:
   number value of source field as millis from 1.1.1970 timestamp and stores it into target field as string value with ISO formatted timestamp.
 * [`RegExpCapturingGroupPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/RegExpCapturingGroupPreprocessor.java) - allows to 
   extract substrings from source string value by use of Regular expression Capturing groups.  
+* [`ScriptingPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/ScriptingPreprocessor.java) - allows to 
+  run script by some <a href="http://docs.oracle.com/javase/6/docs/technotes/guides/scripting/">Java Scripting API</a> 
+  provided engine to manipulate processed data.  
 
 
 structured-content-tools jar file is available from [JBoss maven 

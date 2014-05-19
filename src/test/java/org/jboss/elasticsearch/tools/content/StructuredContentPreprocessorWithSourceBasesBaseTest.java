@@ -73,7 +73,7 @@ public class StructuredContentPreprocessorWithSourceBasesBaseTest {
 
 		Mockito.verify(tested).init(settings);
 		Mockito.verify(tested).preprocessData(Mockito.anyMap(), Mockito.any(PreprocessChainContext.class));
-		Mockito.verify(tested, Mockito.times(0)).createContext();
+		Mockito.verify(tested, Mockito.times(0)).createContext(Mockito.anyMap());
 		Mockito.verifyNoMoreInteractions(tested);
 	}
 
@@ -94,7 +94,7 @@ public class StructuredContentPreprocessorWithSourceBasesBaseTest {
 		Mockito.verify(tested).init(settings);
 		Mockito.verify(tested).preprocessData(data, null);
 		Mockito.verify(tested).processOneSourceValue(data, null, null, null);
-		Mockito.verify(tested, Mockito.times(0)).createContext();
+		Mockito.verify(tested, Mockito.times(0)).createContext(Mockito.anyMap());
 		Mockito.verifyNoMoreInteractions(tested);
 	}
 
@@ -111,7 +111,7 @@ public class StructuredContentPreprocessorWithSourceBasesBaseTest {
 				.addDataWarning(Mockito.any(PreprocessChainContext.class), Mockito.anyString());
 		tested.logger = Mockito.mock(ESLogger.class);
 		Object mockContext = new Object();
-		Mockito.when(tested.createContext()).thenReturn(mockContext);
+		Mockito.when(tested.createContext(Mockito.anyMap())).thenReturn(mockContext);
 
 		Map<String, Object> settings = TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData-bases.json");
 		tested.init(settings);
@@ -146,7 +146,7 @@ public class StructuredContentPreprocessorWithSourceBasesBaseTest {
 		Mockito.verify(tested, Mockito.times(1)).processOneSourceValue(Mockito.eq(author2Mock), Mockito.eq(mockContext),
 				Mockito.eq("comments.author"), Mockito.eq(chainContext));
 		Mockito.verify(tested).processOneSourceValue(editor1Mock, mockContext, "comments.editor", chainContext);
-		Mockito.verify(tested, Mockito.times(1)).createContext();
+		Mockito.verify(tested, Mockito.times(1)).createContext(data);
 		Mockito.verify(tested, Mockito.times(2)).addDataWarning(Mockito.eq(chainContext), Mockito.anyString());
 		Mockito.verifyNoMoreInteractions(tested);
 		Assert.assertTrue(chainContext.isWarning());
