@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.settings.SettingsException;
@@ -334,7 +334,7 @@ public class ESLookupValuePreprocessor extends
 				try {
 					SearchRequestBuilder req = client.prepareSearch(indexName).setTypes(indexType)
 							.setQuery(QueryBuilders.matchAllQuery())
-							.setPostFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(idxSf, sourceValue)));
+							.setFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(idxSf, sourceValue)));
 					for (Map<String, String> mappingRecord : resultMapping) {
 						String idx_resultField = mappingRecord.get(CFG_idx_result_field);
 						if (idx_resultField != null && !"_source".equals(idx_resultField)) {
@@ -392,7 +392,7 @@ public class ESLookupValuePreprocessor extends
 					}
 
 					esExceptionWarned = false;
-				} catch (ElasticsearchException e) {
+				} catch (ElasticSearchException e) {
 					if (!esExceptionWarned) {
 						esExceptionWarned = true;
 						String message = "Lookup failed due '" + e.getClass().getName() + ":" + e.getMessage()

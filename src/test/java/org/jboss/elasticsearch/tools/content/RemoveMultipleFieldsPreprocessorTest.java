@@ -109,8 +109,8 @@ public class RemoveMultipleFieldsPreprocessorTest {
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("removeme_simplevalue", "Ahoj");
 		data.put("keepme", "Keep this value in data");
-		data.put("removeme_map", new HashMap<>());
-		data.put("removeme_list", new ArrayList<>());
+		data.put("removeme_map", new HashMap<Object, Object>());
+		data.put("removeme_list", new ArrayList<Object>());
 
 		Map<String, Object> substructure = new HashMap<String, Object>();
 		data.put("substructure", substructure);
@@ -147,8 +147,8 @@ public class RemoveMultipleFieldsPreprocessorTest {
 
 		dataInBase.put("removeme_simplevalue", "Ahoj");
 		dataInBase.put("keepme", "Keep this value in data");
-		dataInBase.put("removeme_map", new HashMap<>());
-		dataInBase.put("removeme_list", new ArrayList<>());
+		dataInBase.put("removeme_map", new HashMap<Object, Object>());
+		dataInBase.put("removeme_list", new ArrayList<Object>());
 
 		Map<String, Object> substructure = new HashMap<String, Object>();
 		dataInBase.put("substructure", substructure);

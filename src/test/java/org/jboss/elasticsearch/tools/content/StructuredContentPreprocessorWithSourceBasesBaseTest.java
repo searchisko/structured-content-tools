@@ -121,7 +121,7 @@ public class StructuredContentPreprocessorWithSourceBasesBaseTest {
 		data.put("author", authorMock);
 		// will be skipped as it is bad type
 		data.put("editor", "badtype");
-		List<Object> commentsMock = new ArrayList<>();
+		List<Object> commentsMock = new ArrayList<Object>();
 		data.put("comments", commentsMock);
 		Map<String, Object> comment1Mock = new HashMap<String, Object>();
 		commentsMock.add(comment1Mock);

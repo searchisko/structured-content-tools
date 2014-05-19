@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class PreprocessChainContextImpl implements PreprocessChainContext {
 
-	protected List<DataWarning> warnings = new ArrayList<>();
+	protected List<DataWarning> warnings = new ArrayList<DataWarning>();
 
 	@Override
 	public void addDataWarning(String preprocessorName, String warningMessage) {

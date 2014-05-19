@@ -92,7 +92,7 @@ public class ScriptingPreprocessorTest {
 		tested.init("my preprocc", null, settings);
 
 		PreprocessChainContextImpl context = new PreprocessChainContextImpl();
-		Map<String, Object> data = new HashMap<>();
+		Map<String, Object> data = new HashMap<String, Object>();
 		tested.preprocessData(data, context);
 
 		Assert.assertTrue(context.isWarning());
@@ -108,7 +108,7 @@ public class ScriptingPreprocessorTest {
 		tested.init("my preprocc", null, settings);
 
 		PreprocessChainContextImpl context = new PreprocessChainContextImpl();
-		Map<String, Object> data = new HashMap<>();
+		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("v", "val");
 		tested.preprocessData(data, context);
 
