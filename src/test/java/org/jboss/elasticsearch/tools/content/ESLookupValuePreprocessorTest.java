@@ -344,6 +344,36 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 	}
 
 	@Test
+	public void preprocessData_nobases_sourceField_FullSource() throws Exception {
+		try {
+			Client client = prepareESClientForUnitTest();
+
+			ESLookupValuePreprocessor tested = new ESLookupValuePreprocessor();
+			tested.init("Test mapper", client,
+					TestUtils.loadJSONFromClasspathFile("/ESLookupValue_preprocessData-nobases-FullSource.json"));
+
+			// fill testing data
+			prepareTestData(client, tested);
+
+			// case - lookup for existing value
+			{
+				Map<String, Object> values = new HashMap<String, Object>();
+				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ORG");
+				tested.preprocessData(values, null);
+				Assert.assertTrue("found value have to be Map",
+						XContentMapValues.extractValue("full_doc", values) instanceof Map);
+				@SuppressWarnings("rawtypes")
+				Map m = (Map) XContentMapValues.extractValue("full_doc", values);
+				Assert.assertEquals(3, m.size());
+				Assert.assertEquals("jbossorg", m.get("code"));
+			}
+
+		} finally {
+			finalizeESClientForUnitTest();
+		}
+	}
+
+	@Test
 	public void preprocessData_nobases_sourceValue() throws Exception {
 		try {
 			Client client = prepareESClientForUnitTest();

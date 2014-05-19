@@ -61,7 +61,7 @@ import org.elasticsearch.search.SearchHitField;
  * <li>
  * <code>result_mapping<code> - array of mappings from lookup result to the data. Each mapping definition may contain these fields:
  * <ul>
- * <li><code>idx_result_field<code> - field in found search index document to be placed into target field.
+ * <li><code>idx_result_field<code> - field in found search index document to be placed into target field. You can use `_source` value there to get whole content of document found in ES index.
  * <li><code>target_field<code> - target field in data to store looked up value into. Can be same as input field. Dot
  * notation can be used here for structure nesting.
  * <li><code>value_default</code> - optional default value used if lookup do not provide value. If not set then target
@@ -336,7 +336,10 @@ public class ESLookupValuePreprocessor extends
 							.setQuery(QueryBuilders.matchAllQuery())
 							.setPostFilter(FilterBuilders.queryFilter(QueryBuilders.matchQuery(idxSf, sourceValue)));
 					for (Map<String, String> mappingRecord : resultMapping) {
-						req.addField(mappingRecord.get(CFG_idx_result_field));
+						String idx_resultField = mappingRecord.get(CFG_idx_result_field);
+						if (idx_resultField != null && !"_source".equals(idx_resultField)) {
+							req.addField(mappingRecord.get(CFG_idx_result_field));
+						}
 					}
 
 					SearchResponse resp = req.execute().actionGet();
@@ -358,9 +361,18 @@ public class ESLookupValuePreprocessor extends
 						}
 						SearchHit hit = resp.getHits().hits()[0];
 						for (Map<String, String> mappingRecord : resultMapping) {
-							SearchHitField shf = hit.field(mappingRecord.get(CFG_idx_result_field));
-							if (shf != null) {
-								Object v = shf.getValue();
+							String idx_resultField = mappingRecord.get(CFG_idx_result_field);
+							Object v = null;
+							SearchHitField shf = null;
+							if ("_source".equals(idx_resultField)) {
+								v = hit.getSource();
+							} else {
+								shf = hit.field(idx_resultField);
+								if (shf != null) {
+									v = shf.getValue();
+								}
+							}
+							if (shf != null || v != null) {
 								if (v == null && mappingRecord.get(CFG_value_default) != null) {
 									v = ValueUtils.processStringValuePatternReplacement(mappingRecord.get(CFG_value_default), data,
 											sourceValue);
