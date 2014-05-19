@@ -53,7 +53,7 @@ public abstract class StructuredContentPreprocessorWithSourceBasesBase<T> extend
 							if (o instanceof Map) {
 								processOneSourceValue((Map<String, Object>) o, context, base, chainContext);
 							} else {
-								String msg = "Collection if field '" + base
+								String msg = "Collection in field '" + base
 										+ "' contains value which is not Map, which can't be processed as source_base, so is skipped";
 								addDataWarning(chainContext, msg);
 								logger.debug(msg);

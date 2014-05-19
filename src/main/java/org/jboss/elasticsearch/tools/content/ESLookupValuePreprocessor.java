@@ -368,13 +368,15 @@ public class ESLookupValuePreprocessor extends
 								value.put(mappingRecord.get(CFG_target_field), v);
 							} else {
 								String message = "Result found during lookup for value '" + sourceValue + "' using index field '"
-										+ idxSf + " but result field '" + mappingRecord.get(CFG_idx_result_field)
+										+ idxSf + ", but result field '" + mappingRecord.get(CFG_idx_result_field)
 										+ "' is not present there";
 								addDataWarning(chainContext, message);
 								logger.debug(message);
 							}
 						}
 						found = true;
+					} else {
+						addDataWarning(chainContext, "No result found during lookup for value '" + sourceValue + "'.");
 					}
 
 					esExceptionWarned = false;
@@ -401,6 +403,7 @@ public class ESLookupValuePreprocessor extends
 
 	private void processDefaultValues(Object sourceValue, Map<String, Object> data, Map<String, Object> value,
 			PreprocessChainContext chainContext) {
+
 		for (Map<String, String> mappingRecord : resultMapping) {
 			if (mappingRecord.get(CFG_value_default) != null) {
 				Object v = ValueUtils.processStringValuePatternReplacement(mappingRecord.get(CFG_value_default), data,
@@ -408,7 +411,6 @@ public class ESLookupValuePreprocessor extends
 				value.put(mappingRecord.get(CFG_target_field), v);
 			} else {
 				value.put(mappingRecord.get(CFG_target_field), null);
-				addDataWarning(chainContext, "No result found during lookup for value '" + sourceValue + "'.");
 			}
 		}
 	}

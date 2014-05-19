@@ -179,9 +179,13 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 			{
 				Map<String, Object> values = new HashMap<String, Object>();
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "AAA");
-				tested.preprocessData(values, null);
+				PreprocessChainContextImpl chainContext = new PreprocessChainContextImpl();
+				tested.preprocessData(values, chainContext);
 				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
+				// assert there is one and only one warning
+				Assert.assertTrue(chainContext.isWarning());
+				Assert.assertEquals(1, chainContext.getWarnings().size());
 
 				// case - test rewrite on target field
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "BBB");
@@ -199,29 +203,35 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 			{
 				Map<String, Object> values = new HashMap<String, Object>();
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ORG");
-				tested.preprocessData(values, null);
+				PreprocessChainContextImpl chainContext = new PreprocessChainContextImpl();
+				tested.preprocessData(values, chainContext);
 				Assert.assertEquals("jbossorg", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertEquals("jboss.org", (String) XContentMapValues.extractValue("project_name", values));
 
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ORGA");
-				tested.preprocessData(values, null);
+				tested.preprocessData(values, chainContext);
 				Assert.assertEquals("jbossorg", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertEquals("jboss.org", (String) XContentMapValues.extractValue("project_name", values));
 
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ISPN");
-				tested.preprocessData(values, null);
+				tested.preprocessData(values, chainContext);
 				Assert.assertEquals("infinispan", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertEquals("Infinispan", (String) XContentMapValues.extractValue("project_name", values));
+				Assert.assertFalse(chainContext.isWarning());
 			}
 
 			// case - found multiple values over lookup - first one is used
 			{
 				Map<String, Object> values = new HashMap<String, Object>();
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ES");
-				tested.preprocessData(values, null);
+				PreprocessChainContextImpl chainContext = new PreprocessChainContextImpl();
+				tested.preprocessData(values, chainContext);
 				Assert.assertEquals("elasticsearch", (String) XContentMapValues.extractValue("project.code", values));
 				// we test there that missing result field is not NPE
 				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
+				// assert there are two warnings, one for duplicit record and one for missing field in result
+				Assert.assertTrue(chainContext.isWarning());
+				Assert.assertEquals(2, chainContext.getWarnings().size());
 			}
 
 			// case - found multiple values over lookup - ignore mode is used, so default value is added
@@ -229,27 +239,39 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				Map<String, Object> values = new HashMap<String, Object>();
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ES");
 				tested.ignoreMultipleResults = true;
-				tested.preprocessData(values, null);
+				PreprocessChainContextImpl chainContext = new PreprocessChainContextImpl();
+				tested.preprocessData(values, chainContext);
 				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
 				tested.ignoreMultipleResults = false;
+				// assert there is one and only one warning
+				Assert.assertTrue(chainContext.isWarning());
+				Assert.assertEquals(1, chainContext.getWarnings().size());
 			}
 
 			// case - lookup for nonexisting value, test both default and not default value defined
 			{
 				Map<String, Object> values = new HashMap<String, Object>();
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "AAA");
-				tested.preprocessData(values, null);
+				PreprocessChainContextImpl chainContext = new PreprocessChainContextImpl();
+				tested.preprocessData(values, chainContext);
 				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
+				// assert there is one and only one warning
+				Assert.assertTrue(chainContext.isWarning());
+				Assert.assertEquals(1, chainContext.getWarnings().size());
 
 				// case - test rewrite on target field
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "BBB");
 				StructureUtils.putValueIntoMapOfMaps(values, "project.code", "jjj");
 				StructureUtils.putValueIntoMapOfMaps(values, "project_name", "aaa");
-				tested.preprocessData(values, null);
+				chainContext = new PreprocessChainContextImpl();
+				tested.preprocessData(values, chainContext);
 				Assert.assertEquals("defval", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
+				// assert there is one and only one warning
+				Assert.assertTrue(chainContext.isWarning());
+				Assert.assertEquals(1, chainContext.getWarnings().size());
 			}
 
 			// case - test rewrite on target field and default pattern
