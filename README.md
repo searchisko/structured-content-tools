@@ -66,12 +66,12 @@ structured-content-tools jar file is available from [JBoss maven
 repository](https://community.jboss.org/docs/DOC-15169), you can use this 
 dependency snippet in your `pom.xml`.
 
-For Elasticsearch 1.0.x series and java 1.7
+For Elasticsearch 1.x series and java 1.7
 
 	<dependency>
 	  <groupId>org.jboss.elasticsearch</groupId>
 	  <artifactId>structured-content-tools</artifactId>
-	  <version>1.3.3</version>
+	  <version>1.3.4</version>
 	</dependency>
 
 For Elasticsearch 0.90.5 series and java 1.6
