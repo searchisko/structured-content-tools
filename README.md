@@ -71,7 +71,7 @@ For Elasticsearch 1.x series and java 1.7
 	<dependency>
 	  <groupId>org.jboss.elasticsearch</groupId>
 	  <artifactId>structured-content-tools</artifactId>
-	  <version>1.3.4</version>
+	  <version>1.3.5</version>
 	</dependency>
 
 For Elasticsearch 0.90.5 series and java 1.6
