@@ -1,6 +1,10 @@
 structured-content-tools
 ========================
 
+[![Build Status](https://travis-ci.org/searchisko/structured-content-tools.svg?branch=master)](https://travis-ci.org/searchisko/structured-content-tools)
+[![Coverage Status](https://coveralls.io/repos/searchisko/structured-content-tools/badge.png?branch=master)](https://coveralls.io/r/searchisko/structured-content-tools)
+
+
 This framework contains tools useful to process/manipulate structured content 
 represented in Java as [`Map of Maps` structure](http://wiki.fasterxml.com/JacksonInFiveMinutes#A.22Raw.22_Data_Binding_Example). 
 This structure is used often to represent variable JSON data. 
