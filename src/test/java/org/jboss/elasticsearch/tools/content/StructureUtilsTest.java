@@ -402,57 +402,57 @@ public class StructureUtilsTest {
 			// OK
 		}
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	@Test
-    public void getADeepStructureCopy() {
-	    
-	    // case - not NPE on empty data map
-        Assert.assertNull(StructureUtils.getADeepStructureCopy(null));
-        
-        // case - if we give a value that is not a Map or a List, just an immutable value
-        //        it should return the same object.
-        String exampleValue = "example";
-        Assert.assertSame( exampleValue , StructureUtils.getADeepStructureCopy(exampleValue) );
-        
-        
-        // case - a complicated graph of an List inside a Map. Immutable references should stay
-        //        but all List and Map instances should point to different objects.
-        //        A mixed map of array and immutable elements shouldn't happen in ElasticSearch
-        //        but we'll check this case anyway.
-        String listValueNo1 = "listVal1";
-        String listValueNo2 = "listVal2";
-        String mapValueNo1 = "mapVal1";
-        String mapValueNo2 = "mapVal2";
-        String mapKeyNo1 = "key1";
-        String mapKeyNo2 = "key2";
-        String mapListKey = "list";
-        
-        List<String> list = new LinkedList<String>();
-        list.add(listValueNo1);
-        list.add(listValueNo2);
-        
-        Map<String,Object> map = new LinkedHashMap<String,Object>();
-        map.put( mapKeyNo1 , mapValueNo1 );
-        map.put( mapKeyNo2 , mapValueNo2 );
-        map.put( mapListKey , list );
-        
-	    Object copiedMapObj = StructureUtils.getADeepStructureCopy(map);
-	    
-	    // The Map should be of the same size but different instance
-	    Assert.assertTrue( copiedMapObj instanceof Map );
-	    Map<String,Object> copiedMap = (Map<String,Object>)copiedMapObj;
-	    Assert.assertTrue( map.size() == copiedMap.size() );
-	    Assert.assertNotSame( map , copiedMapObj );
-	    
-	    // The List should be of the same size but different instance.
-	    Object copiedListObj = copiedMap.get(mapListKey);
-	    Assert.assertTrue( copiedListObj instanceof List );
-	    List<Object> copiedList = (List<Object>)copiedListObj;
-	    Assert.assertNotSame( copiedList , list );
-	    
-	    // All immutable values inside the List should be same objects.
-        Assert.assertTrue( copiedList.contains(listValueNo1) );
-        Assert.assertTrue( copiedList.contains(listValueNo2) );
+	public void getADeepStructureCopy() {
+
+		// case - not NPE on empty data map
+		Assert.assertNull(StructureUtils.getADeepStructureCopy(null));
+
+		// case - if we give a value that is not a Map or a List, just an immutable value
+		// it should return the same object.
+		String exampleValue = "example";
+		Assert.assertSame(exampleValue, StructureUtils.getADeepStructureCopy(exampleValue));
+
+		// case - a complicated graph of an List inside a Map. Immutable references should stay
+		// but all List and Map instances should point to different objects.
+		// A mixed map of array and immutable elements shouldn't happen in ElasticSearch
+		// but we'll check this case anyway.
+		String listValueNo1 = "listVal1";
+		String listValueNo2 = "listVal2";
+		String mapValueNo1 = "mapVal1";
+		String mapValueNo2 = "mapVal2";
+		String mapKeyNo1 = "key1";
+		String mapKeyNo2 = "key2";
+		String mapListKey = "list";
+
+		List<String> list = new LinkedList<String>();
+		list.add(listValueNo1);
+		list.add(listValueNo2);
+
+		Map<String, Object> map = new LinkedHashMap<String, Object>();
+		map.put(mapKeyNo1, mapValueNo1);
+		map.put(mapKeyNo2, mapValueNo2);
+		map.put(mapListKey, list);
+
+		Object copiedMapObj = StructureUtils.getADeepStructureCopy(map);
+
+		// The Map should be of the same size but different instance
+		Assert.assertTrue(copiedMapObj instanceof Map);
+		Map<String, Object> copiedMap = (Map<String, Object>) copiedMapObj;
+		Assert.assertTrue(map.size() == copiedMap.size());
+		Assert.assertNotSame(map, copiedMapObj);
+
+		// The List should be of the same size but different instance.
+		Object copiedListObj = copiedMap.get(mapListKey);
+		Assert.assertTrue(copiedListObj instanceof List);
+		List<Object> copiedList = (List<Object>) copiedListObj;
+		Assert.assertNotSame(copiedList, list);
+
+		// All immutable values inside the List should be same objects.
+		Assert.assertTrue(copiedList.contains(listValueNo1));
+		Assert.assertTrue(copiedList.contains(listValueNo2));
 	}
 
 }
