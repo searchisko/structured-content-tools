@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,7 @@ import java.util.Set;
  * structure.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
+ * @author Ryszard Kozmik (rkozmik at redhat dot com)
  */
 public class StructureUtils {
 
@@ -250,6 +252,51 @@ public class StructureUtils {
 			return map.remove(field);
 		}
 		return null;
+	}
+	
+	/**
+	 * A recursive method which creates a complete and deep copy of the whole structure.
+	 * Immutable elements stay as they are but all Lists and Maps are replaced with new instances.
+	 * 
+	 * @param root with the structure to copy
+	 * @return deep copy of the given structure
+	 */
+	@SuppressWarnings("unchecked")
+	public static Object getADeepStructureCopy( Object root ) {
+	    
+	    if ( root==null ) {
+	        
+	        return null;
+	        
+	    } else if ( root instanceof List ) {
+	        
+	        List<Object> rootList = (List<Object>)root;
+	        List<Object> copy = new LinkedList<Object>();
+	        
+	        for ( Object elem : rootList ) {
+	            Object copiedElem = getADeepStructureCopy(elem);
+	            if ( copiedElem==null ) continue;
+	            copy.add(copiedElem);   
+	        }
+	        return copy;
+            
+	    } else if ( root instanceof Map ) {
+	        
+	        Map<String,Object> rootMap = (Map<String,Object>)root;
+	        Map<String,Object> copy = new LinkedHashMap<String,Object>(rootMap.size());
+	        
+	        for ( String key : rootMap.keySet() ) {
+	            Object copiedElem = getADeepStructureCopy( rootMap.get(key) );
+	            if ( copiedElem==null ) continue;
+	            copy.put( key, copiedElem );
+	        }
+	        return copy;
+	        
+	    } else {
+	        
+	        // Since it's neither a List nor a Map, it has to be an immutable value which we can copy by reference.
+	        return root;
+	    }
 	}
 
 }

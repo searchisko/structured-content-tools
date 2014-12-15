@@ -7,6 +7,7 @@ package org.jboss.elasticsearch.tools.content;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ import org.junit.Test;
  * Unit tests for {@link ValuesCollectingPreprocessor}.
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
+ * @author Ryszard Kozmik (rkozmik at redhat dot com)
  */
 public class ValuesCollectingPreprocessorTest {
 
@@ -179,7 +181,53 @@ public class ValuesCollectingPreprocessorTest {
 			Assert.assertTrue(vals.contains("ca1"));
 			Assert.assertTrue(vals.contains("ca2"));
 		}
-
+		
+		// case - checking if references of Maps and Lists stay the same if the settings are to make shallow copy.
+		{
+			Map<String,Object> values = new HashMap<String,Object>();
+			Map<String,Object> map = new HashMap<String,Object>();
+			values.put("source_simple", map);
+			List<String> nestedList = new LinkedList<String>();
+			map.put("nested",nestedList);
+			String immutableValue = "value";
+			nestedList.add(immutableValue);
+			
+			tested.preprocessData(values,null);
+			List<Object> vals = (List<Object>) XContentMapValues.extractValue(tested.fieldTarget, values);
+			
+			Map<String,Object> copiedMap = (Map<String,Object>)vals.get(0);
+			Assert.assertSame( copiedMap, map );
+			List<String> copiedList = (List<String>)copiedMap.get("nested");
+			Assert.assertSame( copiedList , nestedList );
+			Assert.assertSame( immutableValue , copiedList.get(0));
+		}
+		
+		// case - checking if references to Maps and Lists are different if the settings are to make deep copy.
+		{
+			ValuesCollectingPreprocessor testedWithDeep = new ValuesCollectingPreprocessor();
+			Map<String,Object> settings = TestUtils.loadJSONFromClasspathFile("/ValuesCollecting_preprocessData.json");
+			settings.put("deep_copy","true");
+			
+			testedWithDeep.init("Test mapper", null, settings);
+			
+			Map<String,Object> values = new HashMap<String,Object>();
+			Map<String,Object> nestedMap = new HashMap<String,Object>();
+			List<Object> list = new LinkedList<Object>();
+			values.put("source_simple", list);
+			
+			list.add(nestedMap);
+			String immutableValue = "value";
+			nestedMap.put("nested",immutableValue);
+			
+			testedWithDeep.preprocessData(values,null);
+			List<Object> vals = (List<Object>) XContentMapValues.extractValue(testedWithDeep.fieldTarget, values);
+			
+			Map<String,Object> copiedMap = (Map<String,Object>)vals.get(0);
+			Assert.assertNotSame( nestedMap, copiedMap );
+			// Since immutable values should be copied by reference the object should be same.
+			Assert.assertSame( immutableValue , copiedMap.get("nested"));
+			
+		}
 	}
 
 	private Map<String, Object> newMapWithFiled(String key, Object value) {

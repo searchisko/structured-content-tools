@@ -64,6 +64,8 @@ Framework contains some generic configurable preprocessors implementation:
 * [`ScriptingPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/ScriptingPreprocessor.java) - allows to 
   run script by some <a href="http://docs.oracle.com/javase/6/docs/technotes/guides/scripting/">Java Scripting API</a> 
   provided engine to manipulate processed data.  
+* [`IsDateInRangePreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/IsDateInRangePreprocessor.java) - checks whether a particular date is
+  in the given range of one or two constraining dates.  
 
 
 structured-content-tools jar file is available from [JBoss maven 
@@ -75,7 +77,7 @@ For Elasticsearch 1.x series and java 1.7
 	<dependency>
 	  <groupId>org.jboss.elasticsearch</groupId>
 	  <artifactId>structured-content-tools</artifactId>
-	  <version>1.3.5</version>
+	  <version>1.3.7</version>
 	</dependency>
 
 For Elasticsearch 0.90.5 series and java 1.6
