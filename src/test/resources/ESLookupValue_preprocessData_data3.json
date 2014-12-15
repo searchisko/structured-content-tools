@@ -1,4 +1,4 @@
 {
 	"code" : "elasticsearch",
-	"jbossorg_jira_project" : "ES"
+	"jbossorg_jira_project" : ["ES","ES2"]
 }

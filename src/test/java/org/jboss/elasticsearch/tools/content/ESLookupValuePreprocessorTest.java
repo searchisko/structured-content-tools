@@ -218,20 +218,27 @@ public class ESLookupValuePreprocessorTest extends ESRealClientTestBase {
 				Assert.assertEquals("infinispan", (String) XContentMapValues.extractValue("project.code", values));
 				Assert.assertEquals("Infinispan", (String) XContentMapValues.extractValue("project_name", values));
 				Assert.assertFalse(chainContext.isWarning());
+
+				values.remove("project_name");
+				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ES2");
+				tested.preprocessData(values, chainContext);
+				Assert.assertEquals("elasticsearch", (String) XContentMapValues.extractValue("project.code", values));
+				// we test there that missing result field is not NPE but warning is there
+				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
+				Assert.assertTrue(chainContext.isWarning());
+				Assert.assertEquals(1, chainContext.getWarnings().size());
 			}
 
-			// case - found multiple values over lookup - first one is used
+			// case - found multiple values over lookup - random one is used
 			{
 				Map<String, Object> values = new HashMap<String, Object>();
 				StructureUtils.putValueIntoMapOfMaps(values, tested.sourceField, "ES");
 				PreprocessChainContextImpl chainContext = new PreprocessChainContextImpl();
 				tested.preprocessData(values, chainContext);
-				Assert.assertEquals("elasticsearch", (String) XContentMapValues.extractValue("project.code", values));
-				// we test there that missing result field is not NPE
-				Assert.assertNull(XContentMapValues.extractValue("project_name", values));
-				// assert there are two warnings, one for duplicit record and one for missing field in result
+				String result = (String) XContentMapValues.extractValue("project.code", values);
+				Assert.assertTrue("elasticsearch".equals(result) || "jbossorg".equals(result));
+				// assert there is warning for duplicit record
 				Assert.assertTrue(chainContext.isWarning());
-				Assert.assertEquals(2, chainContext.getWarnings().size());
 			}
 
 			// case - found multiple values over lookup - ignore mode is used, so default value is added
