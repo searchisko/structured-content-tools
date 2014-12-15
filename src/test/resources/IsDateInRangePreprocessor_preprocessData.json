@@ -1,0 +1,9 @@
+{
+	"left_date"				: "start_date",
+	"left_date_format"		: "yyyy-MM-dd",
+	"right_date"			: "end_date",
+	"right_date_format"		: "yyyy-MM-dd",
+	"checked_date"			: "tested_date",
+	"checked_date_format"	: "yyyy-MM-dd",
+	"result_field"			: "result"
+}

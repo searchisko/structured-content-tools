@@ -25,7 +25,8 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  *     "class"    : "org.jboss.elasticsearch.tools.content.ValuesCollectingPreprocessor",
  *     "settings" : {
  *         "target_field"  : "contributors",
- *         "source_fields" : ["fields.author","fields.reporter","fields.updater"]
+ *         "source_fields" : ["fields.author","fields.reporter","fields.updater"],
+ *         "deep_copy" : "false"
  *     } 
  * }
  * </pre>
@@ -36,18 +37,25 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  * here, lists can be in path - see {@link XContentMapValues#extractValue(String, Map)}.
  * <li><code>target_field</code> - target field in data to store final list. Dot notation can be used here for structure
  * nesting. If collected list is empty nothing is stored here.
+ * <li><code>deep_copy</code> - default value "false". This parameter specifies whether a complete copy of the whole
+ * source_fields structure should be done. In default case the copy of data will be done only by reference. Switching
+ * this parameter to true is especially useful when a person is collecting more complicated values like Lists and Maps
+ * with a plan to modify those without modifying the source instances.
  * </ul>
  * 
  * @author Vlastimil Elias (velias at redhat dot com)
+ * @author Ryszard Kozmik (rkozmik at redhat dot com)
  * @see StructuredContentPreprocessorFactory
  */
 public class ValuesCollectingPreprocessor extends StructuredContentPreprocessorBase {
 
 	protected static final String CFG_SOURCE_FIELDS = "source_fields";
 	protected static final String CFG_TARGET_FIELD = "target_field";
+	protected static final String CFG_DEEP_COPY = "deep_copy";
 
 	protected String fieldTarget;
 	protected List<String> fieldsSource;
+	protected boolean fieldDeepCopy;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -59,6 +67,8 @@ public class ValuesCollectingPreprocessor extends StructuredContentPreprocessorB
 		validateConfigurationObjectNotEmpty(fieldsSource, CFG_SOURCE_FIELDS);
 		fieldTarget = XContentMapValues.nodeStringValue(settings.get(CFG_TARGET_FIELD), null);
 		validateConfigurationStringNotEmpty(fieldTarget, CFG_TARGET_FIELD);
+		String fieldDeepCopyStr = XContentMapValues.nodeStringValue(settings.get(CFG_DEEP_COPY), "false" );
+		fieldDeepCopy = fieldDeepCopyStr.compareTo("true")==0 ? true : false;
 	}
 
 	@Override
@@ -86,9 +96,17 @@ public class ValuesCollectingPreprocessor extends StructuredContentPreprocessorB
 		if (value != null) {
 			if (value instanceof Collection) {
 				for (Object o : ((Collection<Object>) value))
-					collectValue(values, o);
+					if ( fieldDeepCopy ) {
+						collectValue(values, StructureUtils.getADeepStructureCopy(o));
+					} else {
+						collectValue(values, o);
+					}
 			} else {
-				values.add(value);
+				if ( fieldDeepCopy ) {
+					values.add(StructureUtils.getADeepStructureCopy(value));
+				} else {
+					values.add(value);
+				}
 			}
 		}
 	}
