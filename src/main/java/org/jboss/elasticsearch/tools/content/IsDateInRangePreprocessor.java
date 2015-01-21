@@ -21,12 +21,13 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  *     "class"    : "org.jboss.elasticsearch.tools.content.IsDateInRangePreprocessor",
  *     "settings" : {
  *         "left_date"  : "start_date",
- *         "left_date_format" : "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+ *         "left_date_format" : "yyyy-MM-dd'T'HH:mm:ss.SSSXX",
  *         "right_date"  : "end_date",
- *         "right_date_format"  : "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+ *         "right_date_format"  : "yyyy-MM-dd'T'HH:mm:ss.SSSXX",
  *         "checked_date"  : "tested_date",
- *         "checked_date_format"  : "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
- *         "result_field" : "result"
+ *         "checked_date_format"  : "yyyy-MM-dd'T'HH:mm:ss.SSSXX",
+ *         "result_field" : "result",
+ *         "default_value" : "false"
  *     } 
  * }
  * </pre>
@@ -37,17 +38,17 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  * range checking. If not given an open range is assumed. However at least one of date parameters needs to be provided.
  * Dot notation for nested values can be used here (see {@link XContentMapValues#extractValue(String, Map)}).
  * <li><code>left_date_format</code> - This parameter defines date format for the left-hand side date. It's optional and
- * defaults to <code>yyyy-MM-dd'T'HH:mm:ss.SSSZ</code>
+ * defaults to <code>yyyy-MM-dd'T'HH:mm:ss.SSSXX</code>
  * <li><code>right_date</code> - An optional parameter specifying location where right-hand side date can be found for
  * range checking. If not given an open range is assumed. However at least one of date parameters needs to be provided.
  * Dot notation for nested values can be used here (see {@link XContentMapValues#extractValue(String, Map)}).
  * <li><code>right_date_format</code> - This parameter defines date format for the right-hand side date. It's optional
- * and defaults to <code>yyyy-MM-dd'T'HH:mm:ss.SSSZ</code>
+ * and defaults to <code>yyyy-MM-dd'T'HH:mm:ss.SSSXX</code>
  * <li><code>checked_date</code> - The parameter specifies location where the date for range checking is located. Dot
  * notation for nested values can be used here (see {@link XContentMapValues#extractValue(String, Map)}).
  * <li><code>checked_date_format</code> - This parameter defines date format for the checked date. It's optional and
- * defaults to <code>yyyy-MM-dd'T'HH:mm:ss.SSSZ</code>
- * <li><code>target_field</code> - target field in data to store boolean result of comparison. Dot notation can be used
+ * defaults to <code>yyyy-MM-dd'T'HH:mm:ss.SSSXX</code>
+ * <li><code>result_field</code> - result field in data to store boolean result of comparison. Dot notation can be used
  * here for structure nesting.
  * <li><code>source_bases</code> - list of fields in source data which are used as bases. If defined then range
  * comparison is done for each of this fields. <code>left_date</code>, <code>right_date</code> and
@@ -66,7 +67,7 @@ public class IsDateInRangePreprocessor extends StructuredContentPreprocessorWith
 	protected static final String CFG_RIGHT_DATE_FORMAT = "right_date_format";
 	protected static final String CFG_CHECKED_DATE_FORMAT = "checked_date_format";
 	protected static final String CFG_RESULT_FIELD = "result_field";
-	protected static final String CFG_DEFAULT_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+	protected static final String CFG_DEFAULT_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXX";
 
 	protected SimpleDateFormat dateFormatter = new SimpleDateFormat();
 
@@ -188,15 +189,17 @@ public class IsDateInRangePreprocessor extends StructuredContentPreprocessorWith
 			} else {
 				String dateStr = dateFieldData.toString();
 				if (dateStr != null && !dateStr.isEmpty()) {
-					dateFormatter.applyPattern(dateFormat);
-					try {
-						resultDate = dateFormatter.parse(dateStr);
-					} catch (ParseException e) {
-						String msg = dateField + " parameter value of " + dateStr + " could not be parsed using " + dateFormat
-								+ " format.";
-						addDataWarning(chainContext, msg);
-						throw new DataProblemException();
-					}
+				    synchronized(dateFormatter) {
+    					dateFormatter.applyPattern(dateFormat);
+    					try {
+    						resultDate = dateFormatter.parse(dateStr);
+    					} catch (ParseException e) {
+    						String msg = dateField + " parameter value of " + dateStr + " could not be parsed using " + dateFormat
+    								+ " format.";
+    						addDataWarning(chainContext, msg);
+    						throw new DataProblemException();
+    					}
+				    }
 				}
 			}
 		}
