@@ -6,6 +6,7 @@
 package org.jboss.elasticsearch.tools.content;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,10 +147,13 @@ public class ValueUtilsTest {
 	@Test
 	public void formatISODateTime() {
 		Assert.assertNull(ValueUtils.formatISODateTime(null));
+        Assert.assertEquals( ISODateTimeFormat.dateTime().withZoneUTC().print(1344945600000L),
+                ValueUtils.formatISODateTime(new Date(1344945600000L))); 
 		Assert.assertEquals(
-				"2012-08-14T12:00:00.0+0000",
+				"2012-08-14T12:00:00.000Z",
 				ValueUtils.formatISODateTime(ISODateTimeFormat.dateTimeParser().parseDateTime("2012-08-14T13:00:00.0+0100")
 						.toDate()));
+		
 	}
 
 }
