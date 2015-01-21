@@ -165,7 +165,7 @@ public class LongToTimestampValuePreprocessorTest {
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, "100");
 			tested.preprocessData(values, null);
-			Assert.assertEquals("1970-01-01T00:00:00.100+0000", values.get(tested.fieldTarget));
+			Assert.assertEquals("1970-01-01T00:00:00.100Z", values.get(tested.fieldTarget));
 		}
 
 		// *** Number values handling
@@ -175,7 +175,7 @@ public class LongToTimestampValuePreprocessorTest {
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, new Integer(10));
 			tested.preprocessData(values, null);
-			Assert.assertEquals("1970-01-01T00:00:00.10+0000", values.get(tested.fieldTarget));
+			Assert.assertEquals("1970-01-01T00:00:00.010Z", values.get(tested.fieldTarget));
 		}
 
 		// case - Long, rewrite source
@@ -184,7 +184,7 @@ public class LongToTimestampValuePreprocessorTest {
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put(tested.fieldSource, new Long(510));
 			tested.preprocessData(values, null);
-			Assert.assertEquals("1970-01-01T00:00:00.510+0000", values.get(tested.fieldTarget));
+			Assert.assertEquals("1970-01-01T00:00:00.510Z", values.get(tested.fieldTarget));
 		}
 	}
 
@@ -213,12 +213,12 @@ public class LongToTimestampValuePreprocessorTest {
 
 			tested.preprocessData(values, null);
 
-			assertDataStructure(values.get("author"), "10", "1970-01-01T00:00:00.10+0000");
-			assertDataStructure(values.get("editor"), new Long("150"), "1970-01-01T00:00:00.150+0000");
+			assertDataStructure(values.get("author"), "10", "1970-01-01T00:00:00.010Z");
+			assertDataStructure(values.get("editor"), new Long("150"), "1970-01-01T00:00:00.150Z");
 
 			Assert.assertEquals(2, comments.size());
-			assertDataStructure(comment1, "250", "1970-01-01T00:00:00.250+0000");
-			assertDataStructure(comment2, "4521", "1970-01-01T00:00:04.521+0000");
+			assertDataStructure(comment1, "250", "1970-01-01T00:00:00.250Z");
+			assertDataStructure(comment2, "4521", "1970-01-01T00:00:04.521Z");
 		}
 	}
 

@@ -178,7 +178,7 @@ public class ValueUtils {
 		return finalContent.toString();
 	}
 
-	protected static final SimpleDateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SZ");
+	protected static final SimpleDateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXX");
 	static {
 		ISO_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
