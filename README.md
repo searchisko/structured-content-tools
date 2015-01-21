@@ -68,8 +68,7 @@ Framework contains some generic configurable preprocessors implementation:
   in the given range of one or two constraining dates.  
 
 
-structured-content-tools jar file is available from [JBoss maven 
-repository](https://community.jboss.org/docs/DOC-15169), you can use this 
+structured-content-tools jar file is available from [JBoss.org maven repository](https://community.jboss.org/docs/DOC-15169), you can use this 
 dependency snippet in your `pom.xml`.
 
 For Elasticsearch 1.x series and java 1.7
