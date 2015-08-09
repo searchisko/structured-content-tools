@@ -26,8 +26,10 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  *         "right_date_format"  : "yyyy-MM-dd'T'HH:mm:ss.SSSXX",
  *         "checked_date"  : "tested_date",
  *         "checked_date_format"  : "yyyy-MM-dd'T'HH:mm:ss.SSSXX",
+ *         "checked_date_relative" : "false",
  *         "result_field" : "result",
- *         "default_value" : "false"
+ *         "default_value" : "false",
+ *         "source_bases" : ["prep_sys_authors","fields.assignee"]
  *     } 
  * }
  * </pre>
@@ -48,6 +50,8 @@ import org.elasticsearch.common.xcontent.support.XContentMapValues;
  * notation for nested values can be used here (see {@link XContentMapValues#extractValue(String, Map)}).
  * <li><code>checked_date_format</code> - This parameter defines date format for the checked date. It's optional and
  * defaults to <code>yyyy-MM-dd'T'HH:mm:ss.SSSXX</code>
+ * <li><code>checked_date_relative</code> - An optional parameter with default value of 'false' defines whether 
+ * <code>checked_date</code> should be resolved against source base(true) or root(false).
  * <li><code>result_field</code> - result field in data to store boolean result of comparison. Dot notation can be used
  * here for structure nesting.
  * <li><code>source_bases</code> - list of fields in source data which are used as bases. If defined then range
@@ -66,6 +70,7 @@ public class IsDateInRangePreprocessor extends StructuredContentPreprocessorWith
 	protected static final String CFG_LEFT_DATE_FORMAT = "left_date_format";
 	protected static final String CFG_RIGHT_DATE_FORMAT = "right_date_format";
 	protected static final String CFG_CHECKED_DATE_FORMAT = "checked_date_format";
+    protected static final String CFG_CHECKED_DATE_RELATIVE = "checked_date_relative";
 	protected static final String CFG_RESULT_FIELD = "result_field";
 	protected static final String CFG_DEFAULT_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXX";
 
@@ -78,6 +83,7 @@ public class IsDateInRangePreprocessor extends StructuredContentPreprocessorWith
 	protected String leftDateFormat;
 	protected String rightDateFormat;
 	protected String checkedDateFormat;
+	protected boolean checkedDateRelative;
 
 	@Override
 	public void init(Map<String, Object> settings) throws SettingsException {
@@ -96,6 +102,8 @@ public class IsDateInRangePreprocessor extends StructuredContentPreprocessorWith
 		validateConfigurationObjectNotEmpty(checkedDateField, CFG_CHECKED_DATE);
 		checkedDateFormat = XContentMapValues.nodeStringValue(settings.get(CFG_CHECKED_DATE_FORMAT),
 				CFG_DEFAULT_DATE_FORMAT);
+		checkedDateRelative = XContentMapValues.nodeBooleanValue(settings.get(CFG_CHECKED_DATE_RELATIVE),
+                false);
 
 		resultField = XContentMapValues.nodeStringValue(settings.get(CFG_RESULT_FIELD), null);
 		validateConfigurationStringNotEmpty(resultField, CFG_RESULT_FIELD);
@@ -127,8 +135,15 @@ public class IsDateInRangePreprocessor extends StructuredContentPreprocessorWith
 		try {
 			leftDate = handleDateExtractionAndParsing(leftDateField, leftDateFormat, data, base, chainContext);
 			rightDate = handleDateExtractionAndParsing(rightDateField, rightDateFormat, data, base, chainContext);
-			checkedDate = handleDateExtractionAndParsing(checkedDateField, checkedDateFormat,
+			
+			if(checkedDateRelative) {
+			    checkedDate = handleDateExtractionAndParsing(checkedDateField, checkedDateFormat,
+	                    data, base, chainContext);
+			} else {
+			    checkedDate = handleDateExtractionAndParsing(checkedDateField, checkedDateFormat,
 					(base != null ? context : data), null, chainContext);
+			}
+			
 		} catch (DataProblemException e) {
 			return;
 		}
