@@ -66,6 +66,8 @@ Framework contains some generic configurable preprocessors implementation:
   provided engine to manipulate processed data.  
 * [`IsDateInRangePreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/IsDateInRangePreprocessor.java) - checks whether a particular date is
   in the given range of one or two constraining dates.  
+* [`RESTCallPreprocessor`](src/main/java/org/jboss/elasticsearch/tools/content/RESTCallPreprocessor.java) - 
+  performs REST request (values from the data can be used in it) and put defined fields from JSON response into defined target fields in data.
 
 
 structured-content-tools jar file is available from [JBoss.org maven repository](https://community.jboss.org/docs/DOC-15169), you can use this 
@@ -76,7 +78,7 @@ For Elasticsearch 1.x series and java 1.7
 	<dependency>
 	  <groupId>org.jboss.elasticsearch</groupId>
 	  <artifactId>structured-content-tools</artifactId>
-	  <version>1.3.9</version>
+	  <version>1.3.10</version>
 	</dependency>
 
 For Elasticsearch 0.90.5 series and java 1.6

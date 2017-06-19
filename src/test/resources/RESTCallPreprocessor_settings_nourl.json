@@ -1,0 +1,15 @@
+  {
+	"request_method": "GET",
+	"request_url": "",
+	"response_mapping": [
+		{
+			"rest_response_field": "code",
+			"target_field": "project_code",
+			"value_default": "unknown"
+		},
+		{
+			"rest_response_field": "name",
+			"target_field": "project_name"
+		}
+	]
+} 

@@ -104,12 +104,18 @@ public class ValueUtilsTest {
 		data.put("name", "Joe");
 		Assert.assertEquals("Ahoj Joe, welcome.",
 				ValueUtils.processStringValuePatternReplacement("Ahoj {name}, welcome.", data, null));
+		Assert.assertEquals("Ahoj Joe, welcome {name}.",
+                ValueUtils.processStringValuePatternReplacement("Ahoj $name$, welcome {name}.", data, null,'$','$', null));
 		Assert.assertEquals("Joe", ValueUtils.processStringValuePatternReplacement("{name}", data, null));
+		Assert.assertEquals("Joe", ValueUtils.processStringValuePatternReplacement("$name$", data, null,'$','$',null));
 
 		// case - simple one level key, multiple keys - Nonstring found in data
 		data.put("count", new Integer(10));
 		Assert.assertEquals("Ahoj Joe, welcome 10 times.",
 				ValueUtils.processStringValuePatternReplacement("Ahoj {name}, welcome {count} times.", data, null));
+		Assert.assertEquals("Ahoj {Joe}, welcome 10 times.",
+                ValueUtils.processStringValuePatternReplacement("Ahoj {$name$}, welcome $count$ times.", data, null,'$','$', null));
+        
 
 		// case - unclosed braces after key
 		Assert.assertEquals("Ahoj Joe, welcome 10 time{s.",

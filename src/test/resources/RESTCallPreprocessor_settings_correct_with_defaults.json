@@ -1,0 +1,18 @@
+  {
+	"request_url": "http://test.org/api/getData?param1={id}&param2={type}",
+	"response_mapping": [
+		{
+			"rest_response_field": "code",
+			"target_field": "project_code",
+			"value_default": "unknown"
+		},
+		{
+			"rest_response_field": "name",
+			"target_field": "project.project_name"
+		},
+        {
+            "rest_response_field": "_source",
+            "target_field": "whole"
+        }
+	]
+} 

@@ -1,0 +1,5 @@
+  {
+	"request_url": "http://test.org/api/getData?param1={id}&param2={type}",
+	"response_mapping": [
+	]
+} 

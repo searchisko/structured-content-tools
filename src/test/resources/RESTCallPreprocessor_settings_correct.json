@@ -1,0 +1,20 @@
+  {
+    "request_method": "POST",
+	"request_url": "http://test.org/api/getData?param1={id}&param2={type}",
+	"request_timeout" : 5000,
+	"request_max_parallel" : "2",
+	"request_accept_header" : "ahead",
+	"request_content_type_header" : "cthead",
+	"request_content" : "content $content$",
+	"response_mapping": [
+		{
+			"rest_response_field": "code",
+			"target_field": "project_code",
+			"value_default": "unknown"
+		},
+		{
+			"rest_response_field": "name",
+			"target_field": "project_name"
+		}
+	]
+} 
