@@ -1,0 +1,23 @@
+  {
+	"request_url": "https://issues.jboss.org/rest/api/latest/issue/{id}?param2={type}",
+	"response_mapping": [
+		{
+			"rest_response_field": "id",
+			"target_field": "id",
+			"value_default": "unknown"
+		},
+		{
+			"rest_response_field": "fields.issuetype",
+			"target_field": "issue_type"
+		},
+		{
+            "rest_response_field": "fields.timespent",
+            "target_field": "timespent"
+        },
+		
+        {
+            "rest_response_field": "_source",
+            "target_field": "whole"
+        }
+	]
+} 

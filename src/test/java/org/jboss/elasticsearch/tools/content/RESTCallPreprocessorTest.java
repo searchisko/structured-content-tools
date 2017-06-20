@@ -19,11 +19,29 @@ import org.junit.Test;
 import junit.framework.Assert;
 
 /**
- * Unit test for {@link RESTCallPreprocessor}
+ * Unit test for {@link RESTCallPreprocessor}. It also contains <code>main</code> method for integration testing.
  *
  * @author Vlastimil Elias (velias at redhat dot com)
  */
 public class RESTCallPreprocessorTest {
+    
+    //private static final String INT_TEST_CONFIG = "/RESTCallPreprocessor_integrationTest_GET.json";
+    private static final String INT_TEST_CONFIG = "/RESTCallPreprocessor_integrationTest_POST.json";
+    
+    
+    public static void main(String[] args) {
+        RESTCallPreprocessor tested = getTested();
+        Map<String, Object> settings = TestUtils.loadJSONFromClasspathFile(INT_TEST_CONFIG);
+        tested.init(settings);
+        
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", "JBEAP-2377");
+        data.put("type", "p&2\"aa");
+        
+        tested.preprocessData(data );
+        
+        tested.logger.info("Data after integration test {}", data);
+    }
     
     @Test
     public void prepareContent(){
@@ -130,6 +148,7 @@ public class RESTCallPreprocessorTest {
         Assert.assertNotNull(tested.headers);
         Assert.assertEquals("ahead", tested.headers.get("Accept"));
         Assert.assertEquals("cthead", tested.headers.get("Content-Type"));
+        Assert.assertEquals("SearchiskoContenPreprocessor (testPreproc)", tested.headers.get("User-Agent"));
         Assert.assertEquals(2, tested.responseMapping.size());
         
         
@@ -152,7 +171,7 @@ public class RESTCallPreprocessorTest {
         
     }
     
-    public RESTCallPreprocessor getTested(){
+    protected static RESTCallPreprocessor getTested(){
         RESTCallPreprocessor tested = new RESTCallPreprocessor();
         tested.name="testPreproc";
         return tested;

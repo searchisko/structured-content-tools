@@ -65,6 +65,8 @@ import org.jboss.elasticsearch.tools.content.ValueUtils.IValueEncoder;
  * <code>10000</code>.
  * <li><code>request_max_parallel</code> - optional field defining how much of REST request may be performed in
  * parallel. Default value is <code>10</code>.
+ * <li><code>request_user_agent_header</code> - optional field with value for <code>User-Agent</code> header used in REST
+ * request. Default value is <code>SearchiskoContenPreprocessor (preprocessor name)</code>.
  * <li><code>request_accept_header</code> - optional field with value for <code>Accept</code> header used in REST
  * request. Default value is <code>application/json</code>.
  * <li><code>request_content_type_header</code> - optional field with value for <code>Content-Type</code> header used in
@@ -115,6 +117,7 @@ public class RESTCallPreprocessor extends StructuredContentPreprocessorBase {
     protected static final String CFG_REQUEST_TIMEOUT = "request_timeout";
     protected static final String CFG_REQUEST_MAX_PARALLEL = "request_max_parallel";
     protected static final String CFG_REQUEST_ACCEPT_HEADER = "request_accept_header";
+    protected static final String CFG_REQUEST_USER_AGENT_HEADER = "request_user_agent_header";
     protected static final String CFG_REQUEST_CONTENT_TYPE_HEADER = "request_content_type_header";
     protected static final String CFG_REQUEST_CONTENT = "request_content";
     protected static final String CFG_RESPONSE_MAPPING = "response_mapping";
@@ -150,7 +153,8 @@ public class RESTCallPreprocessor extends StructuredContentPreprocessorBase {
 
         headers.put("Accept", XContentMapValues.nodeStringValue(settings.get(CFG_REQUEST_ACCEPT_HEADER), "application/json"));
         headers.put("Content-Type", XContentMapValues.nodeStringValue(settings.get(CFG_REQUEST_CONTENT_TYPE_HEADER), "application/json"));
-
+        headers.put("User-Agent", "SearchiskoContenPreprocessor ("+getName()+")");
+        
         initHttpClient(settings);
     }
 
@@ -192,7 +196,8 @@ public class RESTCallPreprocessor extends StructuredContentPreprocessorBase {
         } catch (Exception e) {
             if (logger.isWarnEnabled())
                 logger.warn("REST request failed: {}", e, e.getMessage());
-            context.addDataWarning(getName(), "REST request failed due to: " + e.getMessage());
+            if (context != null)
+                context.addDataWarning(getName(), "REST request failed due to: " + e.getMessage());
         }
 
         return data;
@@ -213,7 +218,7 @@ public class RESTCallPreprocessor extends StructuredContentPreprocessorBase {
             logger.debug("Parsed ResponseData: {}", responseParsed);
 
         if (logger.isDebugEnabled())
-            logger.debug("Data before processing: {}",  data);
+            logger.debug("Data before processing: {}", data);
 
         for (Map<String, String> mappingRecord : responseMapping) {
             String restResponseField = mappingRecord.get(CFG_rest_response_field);
@@ -311,7 +316,7 @@ public class RESTCallPreprocessor extends StructuredContentPreprocessorBase {
 
         if (logger.isDebugEnabled())
             logger.debug("Going to perform {} REST request to url {} with content: {} ", methodType, url, content);
-        
+
         HttpRequestBase method = null;
         URIBuilder builder = new URIBuilder(url);
         if (methodType.equals(HttpMethodType.POST)) {
@@ -376,7 +381,7 @@ public class RESTCallPreprocessor extends StructuredContentPreprocessorBase {
         clientBuilder.setDefaultRequestConfig(requestConfig);
 
         httpclient = clientBuilder.build();
-        
+
         logger.info("http client initialized");
     }
 

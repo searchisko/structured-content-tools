@@ -70,8 +70,7 @@ Framework contains some generic configurable preprocessors implementation:
   performs REST request (values from the data can be used in it) and put defined fields from JSON response into defined target fields in data.
 
 
-structured-content-tools jar file is available from [JBoss.org maven repository](https://community.jboss.org/docs/DOC-15169), you can use this 
-dependency snippet in your `pom.xml`.
+structured-content-tools jar file is available from [JBoss.org maven repository](https://community.jboss.org/docs/DOC-15169), you can use this dependency snippet in your `pom.xml`.
 
 For Elasticsearch 1.x series and java 1.7
 
@@ -88,4 +87,5 @@ For Elasticsearch 0.90.5 series and java 1.6
 	  <artifactId>structured-content-tools</artifactId>
 	  <version>1.2.11</version>
 	</dependency>
-	
+
+Please note that Elasticsearch jars are necessary to run `structured-content-tools` as defined by `provided` dependency in the `pom` file. 	
