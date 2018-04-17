@@ -38,7 +38,13 @@ public class RESTCallPreprocessorTest {
         data.put("id", "JBEAP-2377");
         data.put("type", "p&2\"aa");
         
-        tested.preprocessData(data );
+        tested.preprocessData(data, new PreprocessChainContext() {
+            
+            @Override
+            public void addDataWarning(String preprocessorName, String warningMessage) throws IllegalArgumentException {
+                System.out.println(warningMessage);
+            }
+        } );
         
         tested.logger.info("Data after integration test {}", data);
     }
@@ -148,10 +154,10 @@ public class RESTCallPreprocessorTest {
         Assert.assertNotNull(tested.headers);
         Assert.assertEquals("ahead", tested.headers.get("Accept"));
         Assert.assertEquals("cthead", tested.headers.get("Content-Type"));
-        Assert.assertEquals("SearchiskoContenPreprocessor (testPreproc)", tested.headers.get("User-Agent"));
+        Assert.assertEquals("myua", tested.headers.get("User-Agent"));
         Assert.assertEquals(2, tested.responseMapping.size());
-        
-        
+        Assert.assertEquals(5, tested.retry_max_num_of_attempts);
+        Assert.assertEquals(5000, tested.retry_delay);
     }
     
     @Test
@@ -167,8 +173,10 @@ public class RESTCallPreprocessorTest {
         Assert.assertNotNull(tested.headers);
         Assert.assertEquals("application/json", tested.headers.get("Accept"));
         Assert.assertEquals("application/json", tested.headers.get("Content-Type"));
+        Assert.assertEquals("SearchiskoContenPreprocessor (testPreproc)", tested.headers.get("User-Agent"));
         Assert.assertEquals(3, tested.responseMapping.size());
-        
+        Assert.assertEquals(1, tested.retry_max_num_of_attempts);
+        Assert.assertEquals(10000, tested.retry_delay);
     }
     
     protected static RESTCallPreprocessor getTested(){

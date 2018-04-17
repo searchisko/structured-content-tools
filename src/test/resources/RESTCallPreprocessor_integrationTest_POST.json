@@ -2,6 +2,9 @@
 	"request_method" : "POST",
 	"request_url": "https://requestb.in/t9firqt9",
 	"request_content" : "{\"id\":\"$id$\", \"type\":\"$type$\"}",
+	"retry_max_num_of_attempts" : 5,
+    "retry_delay" : 5000,
+    "request_timeout" : 15000,
 	"response_mapping": [
 		{
 			"rest_response_field": "id",

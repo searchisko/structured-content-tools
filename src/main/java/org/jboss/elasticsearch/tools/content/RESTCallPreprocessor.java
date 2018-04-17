@@ -38,7 +38,7 @@ import org.jboss.elasticsearch.tools.content.ValueUtils.IValueEncoder;
  * Content preprocessor which allows to perform REST call based on data available in the data structure and map results
  * of the REST call back into the data structure. Authentication is not supported for now. Error from REST call is
  * catched, written to log file as <code>WARNING</code> and data warning is returned back to the calling application.
- * Example of configuration for this preprocessor:
+ * REST call retry mechanism in case of error may be configured. Example of configuration for this preprocessor:
  * 
  * <pre>
  * { 
@@ -65,8 +65,8 @@ import org.jboss.elasticsearch.tools.content.ValueUtils.IValueEncoder;
  * <code>10000</code>.
  * <li><code>request_max_parallel</code> - optional field defining how much of REST request may be performed in
  * parallel. Default value is <code>10</code>.
- * <li><code>request_user_agent_header</code> - optional field with value for <code>User-Agent</code> header used in REST
- * request. Default value is <code>SearchiskoContenPreprocessor (preprocessor name)</code>.
+ * <li><code>request_user_agent_header</code> - optional field with value for <code>User-Agent</code> header used in
+ * REST request. Default value is <code>SearchiskoContenPreprocessor (preprocessor name)</code>.
  * <li><code>request_accept_header</code> - optional field with value for <code>Accept</code> header used in REST
  * request. Default value is <code>application/json</code>.
  * <li><code>request_content_type_header</code> - optional field with value for <code>Content-Type</code> header used in
@@ -75,6 +75,10 @@ import org.jboss.elasticsearch.tools.content.ValueUtils.IValueEncoder;
  * for keys replacement from other values in the data. Keys are enclosed in dollar sign (<code>$</code>), dot notation
  * for deeper nesting may be used in keys. Do not forget to escape quotation marks of content JSON there as template
  * must be valid JSON String in config!
+ * <li><code>retry_max_num_of_attempts</code> - maximal number of REST call retry attempts in case of error. Default
+ * value is <code>1</code> so no retry is performed.
+ * <li><code>retry_delay</code> - delay of REST call retry attempts in case of error in milliseconds. Default value is
+ * <code>10000</code>.
  * <li>
  * <code>response_mapping<code> - array of mappings from REST call result to the data. Each mapping definition may contain these fields:
  * <ul>
@@ -120,6 +124,8 @@ public class RESTCallPreprocessor extends StructuredContentPreprocessorBase {
     protected static final String CFG_REQUEST_USER_AGENT_HEADER = "request_user_agent_header";
     protected static final String CFG_REQUEST_CONTENT_TYPE_HEADER = "request_content_type_header";
     protected static final String CFG_REQUEST_CONTENT = "request_content";
+    protected static final String CFG_RETRY_MAX_NUM_OF_ATTEMPTS = "retry_max_num_of_attempts";
+    protected static final String CFG_RETRY_DELAY = "retry_delay";
     protected static final String CFG_RESPONSE_MAPPING = "response_mapping";
     protected static final String CFG_rest_response_field = "rest_response_field";
     protected static final String CFG_target_field = "target_field";
@@ -130,6 +136,8 @@ public class RESTCallPreprocessor extends StructuredContentPreprocessorBase {
     protected String request_content_template;
     protected Map<String, String> headers = new HashMap<>();
     protected List<Map<String, String>> responseMapping;
+    protected long retry_max_num_of_attempts;
+    protected long retry_delay;
 
     protected CloseableHttpClient httpclient;
 
@@ -151,10 +159,17 @@ public class RESTCallPreprocessor extends StructuredContentPreprocessorBase {
 
         request_content_template = XContentMapValues.nodeStringValue(settings.get(CFG_REQUEST_CONTENT), null);
 
+        retry_max_num_of_attempts = XContentMapValues.nodeLongValue(settings.get(CFG_RETRY_MAX_NUM_OF_ATTEMPTS), 1);
+        if (retry_max_num_of_attempts < 1)
+            retry_max_num_of_attempts = 1;
+        retry_delay = XContentMapValues.nodeLongValue(settings.get(CFG_RETRY_DELAY), 10000);
+        if (retry_delay < 1)
+            retry_delay = 1;
+
         headers.put("Accept", XContentMapValues.nodeStringValue(settings.get(CFG_REQUEST_ACCEPT_HEADER), "application/json"));
         headers.put("Content-Type", XContentMapValues.nodeStringValue(settings.get(CFG_REQUEST_CONTENT_TYPE_HEADER), "application/json"));
-        headers.put("User-Agent", "SearchiskoContenPreprocessor ("+getName()+")");
-        
+        headers.put("User-Agent", XContentMapValues.nodeStringValue(settings.get(CFG_REQUEST_USER_AGENT_HEADER), "SearchiskoContenPreprocessor (" + getName() + ")"));
+
         initHttpClient(settings);
     }
 
@@ -188,16 +203,27 @@ public class RESTCallPreprocessor extends StructuredContentPreprocessorBase {
 
         String content = prepareContent(data);
 
-        try {
-            HttpResponseContent resp = performHttpCall(url, content, headers, request_method);
+        long attempt = 0;
+        while (attempt < retry_max_num_of_attempts) {
+            attempt++;
+            try {
+                HttpResponseContent resp = performHttpCall(url, content, headers, request_method);
 
-            processResponse(data, resp);
+                processResponse(data, resp);
 
-        } catch (Exception e) {
-            if (logger.isWarnEnabled())
-                logger.warn("REST request failed: {}", e, e.getMessage());
-            if (context != null)
-                context.addDataWarning(getName(), "REST request failed due to: " + e.getMessage());
+                return data;
+
+            } catch (Exception e) {
+                if (logger.isWarnEnabled())
+                    logger.warn("REST request attempt " + attempt + "/" + retry_max_num_of_attempts + " failed: {}", e, e.getMessage());
+                if (context != null)
+                    context.addDataWarning(getName(), "REST request attempt " + attempt + "/" + retry_max_num_of_attempts + " failed due to: " + e.getMessage());
+            }
+            try {
+                Thread.sleep(retry_delay);
+            } catch (InterruptedException e) {
+                return data;
+            }
         }
 
         return data;

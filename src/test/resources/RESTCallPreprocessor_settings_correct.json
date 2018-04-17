@@ -5,7 +5,10 @@
 	"request_max_parallel" : "2",
 	"request_accept_header" : "ahead",
 	"request_content_type_header" : "cthead",
+	"request_user_agent_header" : "myua",
 	"request_content" : "content $content$",
+	"retry_max_num_of_attempts" : 5,
+	"retry_delay" : 5000,
 	"response_mapping": [
 		{
 			"rest_response_field": "code",
